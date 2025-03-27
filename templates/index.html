@@ -111,6 +111,63 @@
       transform: translateY(-2px);
       box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     }
+    /* ADAHOME ÖZEL STİLİ */
+.adahome-recommendation {
+    background: linear-gradient(135deg, #fff8f8 0%, #ffecec 100%);
+    border-radius: 10px;
+    border-left: 5px solid #ff6b6b;
+    padding: 15px;
+    margin-bottom: 20px;
+    box-shadow: 0 3px 10px rgba(255,107,107,0.1);
+}
+
+.adahome-header {
+    color: #d63031;
+    font-size: 1.1em;
+    margin-bottom: 10px;
+    text-align: center;
+    padding: 8px;
+    background: rgba(255,107,107,0.1);
+    border-radius: 5px;
+}
+
+.sales-info {
+    margin: 10px 0;
+    padding: 8px;
+    background: white;
+    border-radius: 5px;
+}
+
+.recommendation-box {
+    background: white;
+    padding: 12px;
+    border-radius: 5px;
+    border: 1px dashed #ff6b6b;
+}
+
+/* NORMAL ÖNERİ STİLİ */
+.normal-recommendation {
+    background: #f8f9fa;
+    padding: 12px;
+    border-radius: 5px;
+    margin-bottom: 15px;
+    border-left: 3px solid #5299f5;
+}
+
+.normal-message {
+    margin-top: 5px;
+    padding-left: 10px;
+    color: #555;
+}
+
+/* GENEL STİL */
+.no-recommendation {
+    text-align: center;
+    color: #2ecc71;
+    padding: 15px;
+    background: #f0fff4;
+    border-radius: 5px;
+}
 
     /* Yazdırma için özel ayarlar */
     @media print {
@@ -168,7 +225,19 @@
 .border-bottom {
   border-bottom: 2px dashed #ffc107 !important;
 }
-    }
+/* Dosya başlığı stilleri */
+.file-info-header {
+  background: linear-gradient(135deg, #d0dded 0%, #d0e1f9 100%);
+  border-left: 5px solid #ffcc00;
+  animation: fadeIn 0.5s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+}
+    
   </style>
 </head>
 
@@ -197,6 +266,19 @@
       </div>
     </div>
     <!-- Tablo üstüne filtre ekleyin -->
+    <div class="dashboard-container">
+      <!-- Dosya Bilgi Başlığı -->
+      <div class="file-info-header mb-4 p-3 rounded">
+        <h2 class="m-0 text-center">
+          <i class="fas fa-store-alt me-2"></i>
+          {% if uploaded_filename %}
+            <span class="store-name">{{ uploaded_filename|replace('.csv','') }}</span> SATIŞ ANALİZİ
+          {% else %}
+            <span class="text-muted">Lütfen CSV Dosyası Yükleyin</span>
+          {% endif %}
+        </h2>
+      </div>
+    
 
 
     {% if table_data %}

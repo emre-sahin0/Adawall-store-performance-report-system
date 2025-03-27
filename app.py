@@ -143,11 +143,37 @@ def generate_recommendations(df):
         total_sales = filtered_df["Net Satış Miktarı"].sum()
         
         if total_sales > 0 and total_sales < threshold:
-            recommendations.append(
-                f"🔹 <b>'{keyword}'</b> içeren ürünlerin toplam satışı <b>({total_sales})</b>  Eşik değerimizin <b>({threshold})</b> altında. Önerimiz;. {message}"
-            )
+            if keyword.lower() == "adahome":
+                recommendation = f"""
+                <div class="adahome-recommendation">
+                    <div class="adahome-header">
+                        🏠 <b>ADAHOME GENEL DURUM RAPORU</b> 🏠
+                    </div>
+                    <div class="adahome-content">
+                        <div class="sales-info">
+                            📉 Toplam Satış: <b>{total_sales}</b> | 
+                            🎯 Hedef: <b>{threshold}</b>
+                        </div>
+                        <div class="recommendation-box">
+                            💡 <b>ÖNERİLERİMİZ:</b> {message}
+                        </div>
+                    </div>
+                </div>
+                """
+            else:
+                recommendation = f"""
+                <div class="normal-recommendation">
+                    🔹 <b>'{keyword}'</b> satışı: <b>{total_sales}</b> (Hedef: {threshold})
+                    <div class="normal-message">Öneri: {message}</div>
+                </div>
+                """
+            
+            recommendations.append(recommendation)
     
-    return "<br>".join(recommendations) if recommendations else "✅ Tüm ürünler yeterince satılmış görünüyor!"
+    if not recommendations:
+        return """<div class="no-recommendation">✅ Tüm ürünler yeterince satılmış görünüyor!</div>"""
+    
+    return "".join(recommendations)
 
 
 def generate_missing_recommendations(satilmayan_urunler):
@@ -331,14 +357,15 @@ def upload_file():
     missing_recommendations_html = None
     table_data = None
     missing_products_html = None
-
     pie_chart_url = None
     pie_chart_url2 = None
     pie_chart_url3 = None
+    uploaded_filename = None  # Yeni eklenen değişken
 
     if request.method == "POST" and 'file' in request.files:
         file = request.files['file']
         if file:
+            uploaded_filename = file.filename  # Dosya adını kaydet
             file_path = os.path.join(UPLOAD_FOLDER, file.filename)
             file.save(file_path)
             try:
@@ -367,7 +394,8 @@ def upload_file():
                            recommendations=recommendations_html,
                            pie_chart_url=pie_chart_url,
                            pie_chart_url2=pie_chart_url2,
-                           pie_chart_url3=pie_chart_url3)
+                           pie_chart_url3=pie_chart_url3,
+                           uploaded_filename=uploaded_filename)  # Yeni parametre
 
 
 @app.route("/admin", methods=["GET", "POST"])
