@@ -159,7 +159,7 @@ def generate_missing_recommendations(satilmayan_urunler):
         message = rule["message"]
 
         if any(keyword.lower() in urun.lower() for urun in satilmayan_urunler):
-            recommendations.append(f"🔹 '{keyword}' ile ilgili öneri: {message}")
+            recommendations.append(f"🔹 <b>'{keyword}'</b> ile ilgili öneri: {message}")
 
     return "<br>".join(recommendations) if recommendations else "✅ Satılmayan ürünler için özel bir öneri bulunmamaktadır."
 

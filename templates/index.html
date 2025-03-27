@@ -140,6 +140,34 @@
         max-height: none !important;
         overflow: visible !important;
       }
+      .recommendations-container {
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.low-sales-section {
+  background-color: #fff8e6;
+  padding: 15px;
+  border-radius: 8px;
+}
+
+.no-sales-section {
+  background-color: #f8f9fa;
+  padding: 15px;
+  border-radius: 8px;
+}
+
+.recommendation-content ul {
+  padding-left: 20px;
+}
+
+.recommendation-content li {
+  margin-bottom: 10px;
+}
+
+.border-bottom {
+  border-bottom: 2px dashed #ffc107 !important;
+}
     }
   </style>
 </head>
@@ -228,12 +256,40 @@
     </div>
     {% endif %}
 
-    {% if recommendations %}
-    <div class="alert alert-warning mt-4">
-      <h5>💡 Az Satılan Ürünler İçin Öneriler</h5>
-      <p>{{ recommendations|safe }}</p>
+    {% if recommendations or missing_recommendations %}
+<div class="recommendations-container mt-4">
+  <div class="alert alert-warning mb-0">
+    <!-- Az Satılan Ürünler -->
+    <div class="low-sales-section mb-4 pb-3 border-bottom">
+      <div class="d-flex align-items-center mb-3">
+        <h5 class="m-0">
+          <span class="badge bg-danger me-2">⚠️</span>
+          <strong>AZ SATILAN ÜRÜNLER & ÖNERİLER</strong>
+        </h5>
+      </div>
+      <div class="recommendation-content ps-4">
+        {{ recommendations|safe }}
+      </div>
     </div>
-    {% endif %}
+    
+    <!-- Satılmayan Ürünler -->
+    <div class="no-sales-section pt-3">
+      <div class="d-flex align-items-center mb-3">
+        <h5 class="m-0">
+          <span class="badge bg-dark me-2">❌</span>
+          <strong>SATILMAYAN ÜRÜNLER & ÖNERİLER</strong>
+        </h5>
+      </div>
+      <div class="recommendation-content ps-4">
+        {{ missing_recommendations|safe }}
+      </div>
+    </div>
+  </div>
+</div>
+{% endif %}
+
+
+
 
     {% if missing_products %}
     <div class="alert alert-danger mt-4">
@@ -258,12 +314,7 @@
     </div>
     {% endif %}
 
-    {% if missing_recommendations %}
-    <div class="alert alert-info mt-4">
-      <h5>📢 Satılmayan Ürünler İçin Öneriler</h5>
-      <p>{{ missing_recommendations|safe }}</p>
-    </div>
-    {% endif %}
+   
 
     {% if pie_chart_url %}
     <h3 class="mt-5">📊 Satış Oranları</h3>
