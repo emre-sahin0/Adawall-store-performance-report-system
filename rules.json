@@ -1,5 +1,10 @@
 [
     {
+        "keyword": "AdaPanel",
+        "threshold": 100,
+        "message": "Mağazanızda uygulama alanları oluşturarak müşterilere AdaWall duvar kağıtlarını deneyimleme fırsatı sunabilirsiniz."
+    },
+    {
         "keyword": "AdaHome Döşemelik Kumaşlar",
         "threshold": 10,
         "message": "Mağazalarda 4 farklı döşemelik el kartelamız var. Gelen müşterilere sizde döşemelik kumaş olduğunu söylüyor musunuz ? Mobilya üreticileri ile iş birliği yapabilirsiniz."
@@ -43,5 +48,11 @@
         "keyword": "AdaWall Katalog Poster",
         "threshold": 100,
         "message": "Seasons, Fiji ve Amazon kataloglarımızın mağazalarda yeterince tanıtılamadığı görülmektedir. Satış temsilcilerinin, bu koleksiyonlar arasındaki farkları müşterilere net şekilde aktarabilmesi önemlidir.  Posterler tamamen müşteriye özel üretildiğinden, “Size özel tasarım” vurgusu mutlaka yapılmalıdır. Ayrıca müşterilere, stock.adobe.com/tr adresinden görsel seçebilecekleri ve seçtikleri görselin ID’si ile birlikte ölçülerin Whatsapp hattımıza iletilerek hızlı bir ön çalışma başlatılabileceği anlatılmalıdır.  “Tasarımınızı önce görün, sonra karar verin” gibi ikna edici ifadelerle satış süreci desteklenmelidir."
-    }
+    },
+    {
+        "keyword": "AdaWall",
+        "threshold": 1000,
+        "message": "Mağazanızda uygulama alanları oluşturarak müşterilere AdaWall duvar kağıtlarını deneyimleme fırsatı sunabilirsiniz."
+      }
+     
 ]

@@ -37,8 +37,43 @@
 
     {% include 'partials/_file_info.html' %}
     {% include 'partials/_data_table.html' %}
-    {% include 'partials/_recommendations.html' %}
-    {% include 'partials/_missing_products.html' %}
+
+    {% if combined_recommendations %}
+    <div class="recommendations-container mt-4">
+      <div class="brand-recommendation-wrapper">
+        {{ combined_recommendations|safe }}
+      </div>
+    </div>
+    {% endif %}
+
+    {% if grouped_missing_products %}
+    <div class="alert alert-danger mt-4">
+      <h5 class="mb-3">⚠️ SATILMAYAN ÜRÜNLER</h5>
+      <div class="row">
+        {% for brand, products in grouped_missing_products.items() %}
+        <div class="col-md-4">
+          <h6 class="text-uppercase fw-bold text-danger">{{ brand }}</h6>
+          <ul class="list-unstyled">
+            {% for product in products[:5] %}
+            <li>• {{ product }}</li>
+            {% endfor %}
+          </ul>
+    
+          {% if products|length > 5 %}
+          <ul id="hidden-{{ brand }}" class="list-unstyled" style="display: none;">
+            {% for product in products[5:] %}
+            <li>• {{ product }}</li>
+            {% endfor %}
+          </ul>
+          <button class="btn btn-outline-danger btn-sm" onclick="toggleList('{{ brand }}')">Daha Fazla Göster</button>
+          {% endif %}
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+    
+
     {% include 'partials/_charts.html' %}
 
     <div class="pdf-button-container">
@@ -49,6 +84,17 @@
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
   <script src="/static/script.js"></script>
+  <script>
+    function toggleList(brand) {
+      const list = document.getElementById(`hidden-${brand}`);
+      if (list.style.display === "none") {
+        list.style.display = "block";
+      } else {
+        list.style.display = "none";
+      }
+    }
+  </script>
+  
 </body>
 
 </html>
