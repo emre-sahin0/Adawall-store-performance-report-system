@@ -1,0 +1,53 @@
+{% if table_data %}
+<div class="mt-5">
+  <h4 class="section-title">📊 Yüklenen Dosya Verileri</h4>
+  <div class="mb-3">
+    <label for="categoryFilter" class="form-label">Kategori Filtresi:</label>
+    <select class="form-select" id="categoryFilter">
+      <option value="all">Tüm Kategoriler</option>
+      <option value="AdaHome">AdaHome</option>
+      <option value="AdaPanel">AdaPanel</option>
+      <option value="AdaWall">AdaWall</option>
+    </select>
+  </div>
+  <div class="table-responsive">
+    <table class="table table-bordered table-striped">
+      <thead class="thead-dark">
+        <tr>
+          <th>#</th>
+          <th>Malzeme Grubu</th>
+          <th>Kategori</th>
+          <th>Net Satış Miktarı</th>
+          <th>Kdv Li Net Satış Tutar (TL)</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in table_data[:5] %}
+        <tr>
+          <td>{{ loop.index }}</td>
+          <td>{{ row['Malzeme Grubu'] }}</td>
+          <td>{{ row['Kategori'] if 'Kategori' in row else '-' }}</td>
+          <td>{{ "{:,.2f}".format(row['Net Satış Miktarı']|float) }}</td>
+          <td>{{ "{:,.2f}".format(row['Kdv Li Net Satış Tutar']|float) }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+      <tbody id="hiddenRows" style="display: none;">
+        {% for row in table_data[5:] %}
+        <tr>
+          <td>{{ loop.index + 5 }}</td>
+          <td>{{ row['Malzeme Grubu'] }}</td>
+          <td>{{ row['Kategori'] if 'Kategori' in row else '-' }}</td>
+          <td>{{ "{:,.2f}".format(row['Net Satış Miktarı']|float) }}</td>
+          <td>{{ "{:,.2f}".format(row['Kdv Li Net Satış Tutar']|float) }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    <button class="btn btn-primary w-100" id="toggleButton">
+      <span class="show-text">Daha Fazla Göster ({{ table_data|length - 5 }})</span>
+      <span class="hide-text" style="display:none;">Daha Az Göster</span>
+    </button>
+  </div>
+</div>
+{% endif %}

@@ -1,0 +1,11 @@
+<div class="file-info-header mb-4 p-3 rounded">
+    <h2 class="m-0 text-center">
+      <i class="fas fa-store-alt me-2"></i>
+      {% if uploaded_filename %}
+        <span class="store-name">{{ uploaded_filename|replace('.csv','') }}</span> SATIŞ ANALİZİ
+      {% else %}
+        <span class="text-muted">Lütfen CSV Dosyası Yükleyin</span>
+      {% endif %}
+    </h2>
+  </div>
+  

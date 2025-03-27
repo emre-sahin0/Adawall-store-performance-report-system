@@ -1,0 +1,20 @@
+{% if missing_products %}
+<div class="alert alert-danger mt-4">
+  <h5>⚠️ SATILMAYAN ÜRÜNLER</h5>
+  <p>Bu ürünleri hiç satmamışsınız:</p>
+
+  <ul class="two-columns">
+    {% for product in missing_products.split('<br>')[:5] %}
+    <li>{{ product }}</li>
+    {% endfor %}
+  </ul>
+
+  <ul id="hiddenMissingRows" class="two-columns" style="display: none;">
+    {% for product in missing_products.split('<br>')[5:] %}
+    <li>{{ product }}</li>
+    {% endfor %}
+  </ul>
+
+  <button class="btn btn-outline-danger w-100" id="toggleMissingButton">Daha Fazla Göster</button>
+</div>
+{% endif %}

@@ -1,0 +1,216 @@
+body {
+  background: linear-gradient(135deg, #5299f5, #50b950);
+  min-height: 100vh;
+  padding: 30px;
+}
+
+.dashboard-container {
+  max-width: 1400px;
+  margin: auto;
+  background: white;
+  padding: 30px;
+  border-radius: 15px;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+h2, h3 {
+  color: #343a40;
+  font-weight: bold;
+}
+
+.section-title {
+  border-bottom: 2px solid #ccc;
+  margin-bottom: 20px;
+  padding-bottom: 10px;
+}
+
+.two-columns {
+  column-count: 2;
+  column-gap: 30px;
+}
+
+.table tr {
+  line-height: 1;
+}
+
+.table td, .table th {
+  padding: 0.3rem 0.5rem;
+}
+
+.table thead th {
+  padding: 0.3rem 0.4rem;
+}
+
+.table th {
+  white-space: nowrap;
+  position: sticky;
+  top: 0;
+  background: #343a40;
+  color: white;
+}
+
+.table-responsive {
+  max-height: 600px;
+  overflow-y: auto;
+}
+
+.chart-container img, .img-fluid {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 0 auto;
+}
+
+.filter-section {
+  margin-top: 30px;
+  text-align: center;
+}
+
+.pdf-button-container {
+  margin-top: 30px;
+  text-align: center;
+}
+
+.pdf-button {
+  background-color: #dc3545;
+  color: white;
+  font-weight: bold;
+  padding: 12px 24px;
+  border-radius: 5px;
+  border: none;
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.pdf-button:hover {
+  background-color: #c82333;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Öneri kutuları */
+.adahome-recommendation {
+  background: linear-gradient(135deg, #fff8f8 0%, #ffecec 100%);
+  border-radius: 10px;
+  border-left: 5px solid #ff6b6b;
+  padding: 15px;
+  margin-bottom: 20px;
+  box-shadow: 0 3px 10px rgba(255,107,107,0.1);
+}
+
+.adahome-header {
+  color: #d63031;
+  font-size: 1.1em;
+  margin-bottom: 10px;
+  text-align: center;
+  padding: 8px;
+  background: rgba(255,107,107,0.1);
+  border-radius: 5px;
+}
+
+.sales-info {
+  margin: 10px 0;
+  padding: 8px;
+  background: white;
+  border-radius: 5px;
+}
+
+.recommendation-box {
+  background: white;
+  padding: 12px;
+  border-radius: 5px;
+  border: 1px dashed #ff6b6b;
+}
+
+.normal-recommendation {
+  background: #f8f9fa;
+  padding: 12px;
+  border-radius: 5px;
+  margin-bottom: 15px;
+  border-left: 3px solid #5299f5;
+}
+
+.normal-message {
+  margin-top: 5px;
+  padding-left: 10px;
+  color: #555;
+}
+
+.no-recommendation {
+  text-align: center;
+  color: #2ecc71;
+  padding: 15px;
+  background: #f0fff4;
+  border-radius: 5px;
+}
+
+.recommendations-container {
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.low-sales-section {
+  background-color: #fff8e6;
+  padding: 15px;
+  border-radius: 8px;
+}
+
+.no-sales-section {
+  background-color: #f8f9fa;
+  padding: 15px;
+  border-radius: 8px;
+}
+
+.recommendation-content ul {
+  padding-left: 20px;
+}
+
+.recommendation-content li {
+  margin-bottom: 10px;
+}
+
+.border-bottom {
+  border-bottom: 2px dashed #ffc107 !important;
+}
+
+.file-info-header {
+  background: linear-gradient(135deg, #d0dded 0%, #d0e1f9 100%);
+  border-left: 5px solid #ffcc00;
+  animation: fadeIn 0.5s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Yazdırma için */
+@media print {
+  body {
+    background: white !important;
+    padding: 0 !important;
+  }
+
+  .dashboard-container {
+    box-shadow: none !important;
+    padding: 10px !important;
+    max-width: 100% !important;
+  }
+
+  #toggleButton,
+  #toggleMissingButton,
+  .pdf-button {
+    display: none !important;
+  }
+
+  #hiddenRows,
+  #hiddenMissingRows {
+    display: table-row-group !important;
+  }
+
+  .table-responsive {
+    max-height: none !important;
+    overflow: visible !important;
+  }
+}
