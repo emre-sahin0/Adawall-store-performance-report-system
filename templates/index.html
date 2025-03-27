@@ -11,30 +11,48 @@
 </head>
 
 <body>
-  <div class="dashboard-container">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-      <h2>📂 Satış Verilerini Yükleyin</h2>
-      <a href="/admin" class="btn btn-warning">🔧 Admin Paneli</a>
-    </div>
-
-    <div class="row g-3">
-      <div class="col-md-6">
-        <h4 class="section-title">📆 Aylık Satış Verisi</h4>
-        <form action="/" method="post" enctype="multipart/form-data">
-          <input type="file" name="file" class="form-control mb-2" required>
-          <button type="submit" class="btn btn-success w-100">📤 Aylık Dosya Yükle</button>
-        </form>
-      </div>
-
-      <div class="col-md-6">
-        <h4 class="section-title">📅 Yıllık Satış Verisi</h4>
-        <form action="/upload_yearly" method="post" enctype="multipart/form-data">
-          <input type="file" name="file" class="form-control mb-2" required>
-          <button type="submit" class="btn btn-info w-100">📤 Yıllık Dosya Yükle</button>
-        </form>
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
+    <div class="container-fluid">
+      <span class="navbar-brand fw-bold">📈 Satış Analiz Paneli</span>
+      <div class="d-flex">
+        {% if table_data %}
+        <a href="{{ url_for('upload_file') }}" class="btn btn-outline-light me-2">🔄 Yeni Dosya Yükle</a>
+        {% endif %}
+        <a href="{{ url_for('admin_panel') }}" class="btn btn-warning">🔧 Admin Paneli</a>
       </div>
     </div>
+  </nav>
+  
+  {% if not table_data %}
+  <div id="upload-section">
+    <div class="dashboard-container">
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>📂 Satış Verilerini Yükleyin</h2>
+        <a href="/admin" class="btn btn-warning">🔧 Admin Paneli</a>
+      </div>
+  
+      <div class="row g-3">
+        <div class="col-md-6">
+          <h4 class="section-title">📆 Aylık Satış Verisi</h4>
+          <form action="/" method="post" enctype="multipart/form-data">
+            <input type="file" name="file" class="form-control mb-2" required>
+            <button type="submit" class="btn btn-success w-100">📤 Aylık Dosya Yükle</button>
+          </form>
+        </div>
+  
+        <div class="col-md-6">
+          <h4 class="section-title">📅 Yıllık Satış Verisi</h4>
+          <form action="/upload_yearly" method="post" enctype="multipart/form-data">
+            <input type="file" name="file" class="form-control mb-2" required>
+            <button type="submit" class="btn btn-info w-100">📤 Yıllık Dosya Yükle</button>
+          </form>
+        </div>
+      
+    </div>
+  </div>
+{% endif %}
 
+  
     {% include 'partials/_file_info.html' %}
     {% include 'partials/_data_table.html' %}
 

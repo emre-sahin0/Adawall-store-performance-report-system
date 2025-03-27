@@ -120,9 +120,17 @@ def detect_and_extract_columns(file_path):
         df_cleaned[col] = pd.to_numeric(df_cleaned[col], errors="coerce")
     
     # Birleştirilmiş gösterim adı oluştur
-    df_cleaned["Gösterim Adı"] = (
-        df_cleaned["Malzeme Grubu"] + " - " + df_cleaned["Kategori"].fillna("")
-    ).str.strip(" -")
+    # Eğer zaten "Kategori" sütunu varsa, dokunma
+    if "Kategori" not in df_cleaned.columns:
+        df_cleaned["Kategori"] = df_cleaned["Malzeme Grubu"].apply(
+        lambda x: (
+            "AdaHome" if "adahome" in x.lower() else
+            "AdaWall" if "adawall" in x.lower() else
+            "AdaPanel" if "adapanel" in x.lower() else
+            "Diğer"
+        )
+    )
+
     
     return df_cleaned
 
