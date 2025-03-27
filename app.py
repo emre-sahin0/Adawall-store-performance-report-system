@@ -9,6 +9,7 @@ import sys
 import psutil
 import plotly.graph_objects as go
 from plotly.offline import plot
+from datetime import datetime
 
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -57,59 +58,94 @@ def save_missing_rules(missing_rules):
 
 import pandas as pd
 
+
+
+
+from datetime import datetime
+
 def detect_and_extract_columns(file_path):
-    # CSV'yi oku ve başlıkları tespit et
-    df = pd.read_csv(file_path, encoding="utf-8", sep=";", low_memory=False, header=None)
-    
-    # Aranacak sütun başlıkları
+    df = pd.read_csv(file_path, encoding="utf-8", sep=";", header=None, low_memory=False)
+
+    start_date = None
+    end_date = None
+
+    # İlk 10 satırı satır bazında birleştirip içinde ara
+    for i in range(10):
+        row_text = " ".join(df.iloc[i].dropna().astype(str)).lower()
+
+        if "başlangıç tarihi" in row_text and start_date is None:
+            try:
+                tarih_str = row_text.split("başlangıç tarihi:")[1].split()[0] + " " + row_text.split("başlangıç tarihi:")[1].split()[1]
+                start_date = datetime.strptime(tarih_str.strip(), "%d.%m.%Y %H:%M:%S")
+            except:
+                continue
+
+        if "bitiş tarihi" in row_text and end_date is None:
+            try:
+                tarih_str = row_text.split("bitiş tarihi:")[1].split()[0] + " " + row_text.split("bitiş tarihi:")[1].split()[1]
+                end_date = datetime.strptime(tarih_str.strip(), "%d.%m.%Y %H:%M:%S")
+            except:
+                continue
+
+    # ✅ Rapor Tipi Belirleme
+    if start_date and end_date:
+        days = (end_date - start_date).days
+        if 25 <= days <= 34:
+            rapor_tipi = "Aylık"
+        elif 76 <= days <= 110:
+            rapor_tipi = "3 Aylık"
+        elif 160 <= days <= 220:
+            rapor_tipi = "6 Aylık"
+        elif 340 <= days <= 385:
+            rapor_tipi = "Yıllık"
+        else:
+            rapor_tipi = f"{days} Günlük"
+    else:
+        rapor_tipi = "Genel"
+
+    print(f"✅ Başlangıç: {start_date} | Bitiş: {end_date} ➜ Rapor Tipi: {rapor_tipi}")
+
+    # 🧩 Son olarak buraya senin tüm veri ayıklama işlemlerin gelmeli:
+    # df_cleaned = ...
+    # return df_cleaned,_
+
+
+    # ⬇️ SÜTUNLARI TESPİT ET (eski kodunla aynı)
     malzeme_keywords = ["malzeme grubu", "ürün grubu", "malzeme adı"]
     kategori_keywords = ["kategori"]
     satis_keywords = ["net satış miktarı", "satış miktar", "toplam satış"]
     kdvli_keywords = ["kdv li net satış tutar", "kdv'li net satış tutarı", "kdv dahil satış tutarı"]
-    
-    # Sütun indekslerini ve veri başlangıç satırını bul
+
     malzeme_sutun = kategori_sutun = satis_sutun = kdvli_sutun = data_start_row = None
-    
+
     for i in range(50):
         row_values = df.iloc[i].astype(str).str.lower()
-        
-        # Malzeme Grubu sütununu bul
+
         for keyword in malzeme_keywords:
             if any(row_values.str.contains(keyword)):
                 malzeme_sutun = row_values[row_values.str.contains(keyword)].index[0]
-        
-        # Kategori sütununu bul
         for keyword in kategori_keywords:
             if any(row_values.str.contains(keyword)):
                 kategori_sutun = row_values[row_values.str.contains(keyword)].index[0]
-        
-        # Satış miktarı sütununu bul
         for keyword in satis_keywords:
             if any(row_values.str.contains(keyword)):
                 satis_sutun = row_values[row_values.str.contains(keyword)].index[0]
-        
-        # KDV'li tutar sütununu bul
         for keyword in kdvli_keywords:
             if any(row_values.str.contains(keyword)):
                 kdvli_sutun = row_values[row_values.str.contains(keyword)].index[0]
-        
-        # Tüm sütunlar bulunduysa döngüyü kır
-        if all([malzeme_sutun is not None, kategori_sutun is not None, 
-                satis_sutun is not None, kdvli_sutun is not None]):
+
+        if all([malzeme_sutun, kategori_sutun, satis_sutun, kdvli_sutun]):
             data_start_row = i
             break
 
     if None in [malzeme_sutun, kategori_sutun, satis_sutun, kdvli_sutun, data_start_row]:
-        raise ValueError("Gerekli sütunlardan biri veya daha fazlası bulunamadı!")
+        raise ValueError("Gerekli sütunlar bulunamadı!")
 
-    # İlgili sütunları seç
+    # Temizlenmiş veri çerçevesi
     df_cleaned = df.iloc[data_start_row + 1:, [malzeme_sutun, kategori_sutun, satis_sutun, kdvli_sutun]]
     df_cleaned.columns = ["Malzeme Grubu", "Kategori", "Net Satış Miktarı", "Kdv Li Net Satış Tutar"]
-    
-    # Temizleme işlemleri
     df_cleaned = df_cleaned[df_cleaned["Malzeme Grubu"] != "Toplam"].dropna()
-    
-    # Sayısal değerleri temizle
+
     for col in ["Net Satış Miktarı", "Kdv Li Net Satış Tutar"]:
         df_cleaned[col] = (
             df_cleaned[col].astype(str)
@@ -118,22 +154,19 @@ def detect_and_extract_columns(file_path):
             .str.replace(",", ".", regex=False)
         )
         df_cleaned[col] = pd.to_numeric(df_cleaned[col], errors="coerce")
-    
-    # Birleştirilmiş gösterim adı oluştur
-    # Eğer zaten "Kategori" sütunu varsa, dokunma
-    # Filtreleme için ayrı bir sütun: Malzeme Grubu'na göre belirle
+
+    # Filtreleme için ayrı sütun
     df_cleaned["Filtre"] = df_cleaned["Malzeme Grubu"].apply(
-    lambda x: (
-        "AdaHome" if "adahome" in x.lower() else
-        "AdaWall" if "adawall" in x.lower() else
-        "AdaPanel" if "adapanel" in x.lower() else
-        "Diğer"
+        lambda x: (
+            "AdaHome" if "adahome" in x.lower() else
+            "AdaWall" if "adawall" in x.lower() else
+            "AdaPanel" if "adapanel" in x.lower() else
+            "Diğer"
+        )
+        
     )
-)
 
-
-    
-    return df_cleaned
+    return df_cleaned, rapor_tipi
 
 
 
@@ -358,6 +391,7 @@ def upload_file():
     table_data = None
     missing_products_html = None
     pie_chart_url = None
+    rapor_tipi = None
     pie_chart_url2 = None
     pie_chart_url3 = None
     uploaded_filename = None
@@ -371,7 +405,12 @@ def upload_file():
             file_path = os.path.join(UPLOAD_FOLDER, file.filename)
             file.save(file_path)
             try:
-                df_cleaned = detect_and_extract_columns(file_path)
+                # Eski satır:
+# df_cleaned = detect_and_extract_columns(file_path)
+
+# Yeni satır:
+                df_cleaned, rapor_tipi = detect_and_extract_columns(file_path)
+
                 session['data'] = df_cleaned.to_dict(orient="records")
                 table_data = df_cleaned.to_dict(orient="records")
 
@@ -397,6 +436,7 @@ def upload_file():
                            missing_recommendations=missing_recommendations_html,
                            recommendations=recommendations_html,
                            pie_chart_url=pie_chart_url,
+                           rapor_tipi=rapor_tipi,
                            pie_chart_url2=pie_chart_url2,
                            pie_chart_url3=pie_chart_url3,
                            uploaded_filename=uploaded_filename,
