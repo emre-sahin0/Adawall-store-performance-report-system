@@ -17,6 +17,10 @@ h2, h3 {
   color: #343a40;
   font-weight: bold;
 }
+.text-end {
+  text-align: right;
+}
+
 
 .section-title {
   border-bottom: 2px solid #ccc;

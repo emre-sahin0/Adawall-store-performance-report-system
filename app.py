@@ -121,15 +121,16 @@ def detect_and_extract_columns(file_path):
     
     # Birleştirilmiş gösterim adı oluştur
     # Eğer zaten "Kategori" sütunu varsa, dokunma
-    if "Kategori" not in df_cleaned.columns:
-        df_cleaned["Kategori"] = df_cleaned["Malzeme Grubu"].apply(
-        lambda x: (
-            "AdaHome" if "adahome" in x.lower() else
-            "AdaWall" if "adawall" in x.lower() else
-            "AdaPanel" if "adapanel" in x.lower() else
-            "Diğer"
-        )
+    # Filtreleme için ayrı bir sütun: Malzeme Grubu'na göre belirle
+    df_cleaned["Filtre"] = df_cleaned["Malzeme Grubu"].apply(
+    lambda x: (
+        "AdaHome" if "adahome" in x.lower() else
+        "AdaWall" if "adawall" in x.lower() else
+        "AdaPanel" if "adapanel" in x.lower() else
+        "Diğer"
     )
+)
+
 
     
     return df_cleaned
