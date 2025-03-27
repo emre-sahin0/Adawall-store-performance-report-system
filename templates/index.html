@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CSV Yükleme ve Analiz</title>
+  <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body {
+      background: linear-gradient(135deg, #5299f5, #50b950);
+      min-height: 100vh;
+      padding: 30px;
+    }
+
+    .dashboard-container {
+      max-width: 1400px;
+      margin: auto;
+      background: white;
+      padding: 30px;
+      border-radius: 15px;
+      box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+    }
+
+    h2, h3 {
+      color: #343a40;
+      font-weight: bold;
+    }
+    /* Tablo satır aralıklarını küçültme */
+.table tr {
+  line-height: 1; /* Satır yüksekliğini azaltır */
+}
+
+.table td, .table th {
+  padding: 0.3rem 0.5rem; /* Üst-alt ve sağ-sol padding değerlerini azaltır */
+}
+
+/* Başlık satırını da uyumlu hale getirme */
+.table thead th {
+  padding: 0.3rem 0.4rem;
+}
+
+    .section-title {
+      border-bottom: 2px solid #ccc;
+      margin-bottom: 20px;
+      padding-bottom: 10px;
+    }
+    
+    .two-columns {
+      column-count: 2;
+      column-gap: 30px;
+    }
+
+    .chart-container img {
+      max-width: 100%;
+      height: auto;
+      display: block;
+      margin: 0 auto;
+    }
+    .img-fluid {
+      max-width: 100%;
+      height: auto;
+    }
+
+    .filter-section {
+      margin-top: 30px;
+      text-align: center;
+    }
+
+    /* Tablo stilleri */
+    .table th {
+      white-space: nowrap;
+      position: sticky;
+      top: 0;
+      background: #343a40;
+      color: white;
+    }
+    .table-responsive {
+      max-height: 600px;
+      overflow-y: auto;
+    }
+
+    /* PDF butonu için özel stil */
+    .pdf-button-container {
+      margin-top: 30px;
+      text-align: center;
+    }
+    .pdf-button {
+      background-color: #dc3545;
+      color: white;
+      font-weight: bold;
+      padding: 12px 24px;
+      border-radius: 5px;
+      border: none;
+      font-size: 16px;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    .pdf-button:hover {
+      background-color: #c82333;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+
+    /* Yazdırma için özel ayarlar */
+    @media print {
+      body {
+        background: white !important;
+        padding: 0 !important;
+      }
+      .dashboard-container {
+        box-shadow: none !important;
+        padding: 10px !important;
+        max-width: 100% !important;
+      }
+      #toggleButton, #toggleMissingButton, .pdf-button {
+        display: none !important;
+      }
+      #hiddenRows, #hiddenMissingRows {
+        display: table-row-group !important;
+      }
+      .table-responsive {
+        max-height: none !important;
+        overflow: visible !important;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="dashboard-container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h2>📂 Satış Verilerini Yükleyin</h2>
+      <a href="/admin" class="btn btn-warning">🔧 Admin Paneli</a>
+    </div>
+
+    <div class="row g-3">
+      <div class="col-md-6">
+        <h4 class="section-title">📆 Aylık Satış Verisi</h4>
+        <form action="/" method="post" enctype="multipart/form-data">
+          <input type="file" name="file" class="form-control mb-2" required>
+          <button type="submit" class="btn btn-success w-100">📤 Aylık Dosya Yükle</button>
+        </form>
+      </div>
+
+      <div class="col-md-6">
+        <h4 class="section-title">📅 Yıllık Satış Verisi</h4>
+        <form action="/upload_yearly" method="post" enctype="multipart/form-data">
+          <input type="file" name="file" class="form-control mb-2" required>
+          <button type="submit" class="btn btn-info w-100">📤 Yıllık Dosya Yükle</button>
+        </form>
+      </div>
+    </div>
+
+    {% if table_data %}
+    <div class="mt-5">
+      <h4 class="section-title">📊 Yüklenen Dosya Verileri</h4>
+      <div class="table-responsive">
+        <table class="table table-bordered table-striped">
+          <thead class="thead-dark">
+            <tr>
+              <th>#</th>
+              
+              <th>Malzeme Grubu</th>
+              <th>Kategori</th>
+              <th>Net Satış Miktarı</th>
+              <th>Kdv Li Net Satış Tutar (TL)</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for row in table_data[:5] %}
+            <tr>
+              <td>{{ loop.index }}</td>
+              
+              <td>{{ row['Malzeme Grubu'] }}</td>
+              <td>{{ row['Kategori'] if 'Kategori' in row else '-' }}</td>
+              <td>{{ "{:,.2f}".format(row['Net Satış Miktarı']|float) }}</td>
+              <td>{{ "{:,.2f}".format(row['Kdv Li Net Satış Tutar']|float) }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+          <tbody id="hiddenRows" style="display: none;">
+            {% for row in table_data[5:] %}
+            <tr>
+              <td>{{ loop.index + 5 }}</td>
+              
+              <td>{{ row['Malzeme Grubu'] }}</td>
+              <td>{{ row['Kategori'] if 'Kategori' in row else '-' }}</td>
+              <td>{{ "{:,.2f}".format(row['Net Satış Miktarı']|float) }}</td>
+              <td>{{ "{:,.2f}".format(row['Kdv Li Net Satış Tutar']|float) }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        <button class="btn btn-primary w-100" id="toggleButton">
+          <span class="show-text">Daha Fazla Göster ({{ table_data|length - 5 }})</span>
+          <span class="hide-text" style="display:none;">Daha Az Göster</span>
+        </button>
+      </div>
+    </div>
+    {% endif %}
+
+    {% if recommendations %}
+    <div class="alert alert-warning mt-4">
+      <h5>💡 Az Satılan Ürünler İçin Öneriler</h5>
+      <p>{{ recommendations|safe }}</p>
+    </div>
+    {% endif %}
+
+    {% if missing_products %}
+    <div class="alert alert-danger mt-4">
+      <h5>⚠️ SATILMAYAN ÜRÜNLER</h5>
+      <p>Bu ürünleri hiç satmamışsınız:</p>
+    
+      <!-- İlk 5 ürün -->
+      <ul class="two-columns">
+        {% for product in missing_products.split('<br>')[:5] %}
+        <li>{{ product }}</li>
+        {% endfor %}
+      </ul>
+    
+      <!-- Geri kalan ürünler -->
+      <ul id="hiddenMissingRows" class="two-columns" style="display: none;">
+        {% for product in missing_products.split('<br>')[5:] %}
+        <li>{{ product }}</li>
+        {% endfor %}
+      </ul>
+    
+      <button class="btn btn-outline-danger w-100" id="toggleMissingButton">Daha Fazla Göster</button>
+    </div>
+    {% endif %}
+
+    {% if missing_recommendations %}
+    <div class="alert alert-info mt-4">
+      <h5>📢 Satılmayan Ürünler İçin Öneriler</h5>
+      <p>{{ missing_recommendations|safe }}</p>
+    </div>
+    {% endif %}
+
+    {% if pie_chart_url %}
+    <h3 class="mt-5">📊 Satış Oranları</h3>
+    <div class="row text-center">
+      <div class="col-md-6 mb-4">
+        <img src="data:image/png;base64,{{ pie_chart_url }}" alt="Pie 1" class="img-fluid">
+      </div>
+      <div class="col-md-6 mb-4">
+        <img src="data:image/png;base64,{{ pie_chart_url2 }}" alt="Pie 2" class="img-fluid">
+      </div>
+      <div class="col-md-6 mb-4">
+        <img src="data:image/png;base64,{{ pie_chart_url3 }}" alt="Pie 3" class="img-fluid">
+      </div>
+      <div class="col-md-6 mb-4">
+        <label for="soldFilter" class="form-label text-danger fw-bold">🔹 Satılan Ürünlerin Kategorilerini Seçin</label>
+        <select class="form-select mb-3" id="soldFilter" multiple>
+          <option value="AdaWall">AdaWall</option>
+          <option value="AdaHome">AdaHome</option>
+          <option value="AdaPanel">AdaPanel</option>
+        </select>
+        <div id="filteredSoldChartArea"></div>
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- PDF Oluştur Butonu -->
+    <div class="pdf-button-container">
+      <button class="pdf-button" onclick="generatePDF()">📄 PDF Oluştur</button>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <script>
+      $(document).ready(() => {
+        $('#soldFilter').select2({ placeholder: "Kategori seçin", width: '100%' });
+
+        $('#soldFilter').on('change', function () {
+          const selected = $(this).val();
+          if (!selected.length) {
+            $('#filteredSoldChartArea').html('');
+            return;
+          }
+          fetch('/filtered_sold_chart', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ selected_categories: selected })
+          })
+            .then(res => res.text())
+            .then(html => {
+              $('#filteredSoldChartArea').html(html);
+            });
+        });
+
+        // Düzeltilmiş Daha Fazla Göster butonu
+        document.getElementById('toggleButton')?.addEventListener('click', function() {
+          const hiddenRows = document.getElementById('hiddenRows');
+          const showText = this.querySelector('.show-text');
+          const hideText = this.querySelector('.hide-text');
+          
+          if (hiddenRows.style.display === 'none') {
+            hiddenRows.style.display = 'table-row-group';
+            showText.style.display = 'none';
+            hideText.style.display = 'inline';
+            this.classList.remove('btn-primary');
+            this.classList.add('btn-danger');
+          } else {
+            hiddenRows.style.display = 'none';
+            showText.style.display = 'inline';
+            hideText.style.display = 'none';
+            this.classList.remove('btn-danger');
+            this.classList.add('btn-primary');
+          }
+        });
+
+        // Satılmayan ürünler için toggle
+        document.getElementById('toggleMissingButton')?.addEventListener('click', function() {
+          const hiddenMissingRows = document.getElementById('hiddenMissingRows');
+          if (hiddenMissingRows.style.display === 'none') {
+            hiddenMissingRows.style.display = 'block';
+            this.textContent = 'Daha Az Göster';
+          } else {
+            hiddenMissingRows.style.display = 'none';
+            this.textContent = 'Daha Fazla Göster';
+          }
+        });
+      });
+
+      // PDF oluşturma fonksiyonu
+      function generatePDF() {
+        // Tüm gizli satırları göster
+        const hiddenRows = document.getElementById('hiddenRows');
+        if (hiddenRows) hiddenRows.style.display = 'table-row-group';
+        
+        const hiddenMissingRows = document.getElementById('hiddenMissingRows');
+        if (hiddenMissingRows) hiddenMissingRows.style.display = 'block';
+        
+        // Yazdırma işlemini başlat
+        window.print();
+        
+        // Butonları eski haline getir
+        setTimeout(() => {
+          if (hiddenRows) hiddenRows.style.display = 'none';
+          if (hiddenMissingRows) hiddenMissingRows.style.display = 'none';
+        }, 1000);
+      }
+    </script>
+  </div>
+</body>
+</html>
