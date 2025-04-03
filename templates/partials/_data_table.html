@@ -1,7 +1,19 @@
 {% if table_data %}
+<style>
+  @media print {
+    #toggleButton {
+      display: none;
+    }
+  }
+</style>
+
 <div class="mt-5">
-  <h4 class="section-title">📊 Yüklenen Dosya Verileri</h4>
+  <h4 class="section-title">📊 Satılan Ürünler</h4>
   <div class="mb-3">
+    <div class="summary-box" style="background-color: #fff3cd; border-left: 5px solid #ffc107; padding: 10px; margin-top: 10px;">
+      💰 <b>Toplam Ciro:</b> {{ '{:,.2f}'.format(ciro) }} TL
+    </div>
+    
     <label for="categoryFilter" class="form-label">Kategori Filtresi:</label>
     <select class="form-select" id="categoryFilter">
       <option value="all">Tüm Kategoriler</option>
@@ -51,7 +63,8 @@
     <button class="btn btn-primary w-100" id="toggleButton">
       <span class="show-text">Daha Fazla Göster ({{ table_data|length - 5 }})</span>
       <span class="hide-text" style="display:none;">Daha Az Göster</span>
-    </button>
+  </button>
+  
   </div>
 </div>
 {% endif %}

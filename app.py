@@ -10,7 +10,11 @@ import psutil
 import plotly.graph_objects as go
 from plotly.offline import plot
 from datetime import datetime
-
+from docx import Document
+from docx.shared import Inches
+import requests
+import base64
+import os
 import pandas as pd
 import matplotlib.pyplot as plt
 from flask import Flask, request, render_template, redirect, url_for, session
@@ -63,6 +67,9 @@ import pandas as pd
 
 from datetime import datetime
 
+from datetime import datetime
+import pandas as pd
+
 def detect_and_extract_columns(file_path):
     df = pd.read_csv(file_path, encoding="utf-8", sep=";", header=None, low_memory=False)
 
@@ -92,6 +99,29 @@ def detect_and_extract_columns(file_path):
         days = (end_date - start_date).days
         if 25 <= days <= 34:
             rapor_tipi = "Aylık"
+            # İngilizce ay ismini Türkçe'ye çevirme
+            ay_ismi_en = start_date.strftime("%B")  # Örneğin "March"
+            
+            # Ayları Türkçe'ye çevir
+            ay_cevirisi = {
+                "January": "Ocak",
+                "February": "Şubat",
+                "March": "Mart",
+                "April": "Nisan",
+                "May": "Mayıs",
+                "June": "Haziran",
+                "July": "Temmuz",
+                "August": "Ağustos",
+                "September": "Eylül",
+                "October": "Ekim",
+                "November": "Kasım",
+                "December": "Aralık"
+            }
+            
+            # Ay ismini Türkçe'ye çeviriyoruz
+            ay_ismi = ay_cevirisi.get(ay_ismi_en, ay_ismi_en)
+            
+            rapor_tipi = f"{ay_ismi} Ayı İçin Aylık Satış Analizi"
         elif 76 <= days <= 110:
             rapor_tipi = "3 Aylık"
         elif 160 <= days <= 220:
@@ -103,8 +133,8 @@ def detect_and_extract_columns(file_path):
     else:
         rapor_tipi = "Genel"
 
+    # HTML şablonunda kullanılacak rapor tipi ve dosya ismi
     print(f"✅ Başlangıç: {start_date} | Bitiş: {end_date} ➜ Rapor Tipi: {rapor_tipi}")
-
     # 🧩 Son olarak buraya senin tüm veri ayıklama işlemlerin gelmeli:
     # df_cleaned = ...
     # return df_cleaned,_
@@ -166,7 +196,7 @@ def detect_and_extract_columns(file_path):
         
     )
 
-    return df_cleaned, rapor_tipi
+    return df_cleaned, rapor_tipi,
 
 
 
@@ -204,12 +234,12 @@ def generate_combined_recommendations(df_cleaned):
     for brand in brands:
         block = ""
         brand_df = merged[merged["Malzeme Grubu"].str.lower().str.contains(brand)]
-
-        general_rule = next((r for r in rules if r["keyword"].lower() == brand), None)
-        total_sales = brand_df["Net Satış Miktarı"].sum()
-
         icon = "🏠" if brand == "adahome" else "🧱" if brand == "adawall" else "🧩"
         brand_title = brand.upper()
+
+        # ✅ Genel öneriyi yakala (ilk sayısal olanı al)
+        general_rule = next((r for r in rules if r["keyword"].lower() == brand and isinstance(r["threshold"], (int, float))), None)
+        total_sales = brand_df["Net Satış Miktarı"].sum()
 
         if general_rule and total_sales < general_rule["threshold"]:
             block += f"""
@@ -219,40 +249,58 @@ def generate_combined_recommendations(df_cleaned):
                 <div class='recommendation-box'>💡 <b>ÖNERİ:</b> {general_rule['message']}</div>
             """
 
+        # ✅ Ürün bazlı kurallar
         product_rules = [r for r in rules if r["keyword"].lower().startswith(brand) and r["keyword"].lower() != brand]
 
         for rule in product_rules:
             keyword = rule["keyword"].lower()
+            filtered = pd.DataFrame()
 
-            # Özel kural: Adawall Duvar Kağıdı 10 -> kategori = "10.0 MTR"
-            if keyword == "adawall duvar kağıdı 10":
+            if keyword == "adawall duvar kağıdı 10m":
                 filtered = merged[
                     (merged["Malzeme Grubu"].str.lower().str.contains("adawall duvar kağıdı")) &
-                    (merged["Kategori"].str.lower().str.strip() == "10.0 mtr")
+                    (merged["Kategori"].str.lower() == "10.0 mtr")
                 ]
-            elif keyword == "adawall duvar kağıdı 15":
+            elif keyword == "adawall duvar kağıdı 15m":
                 filtered = merged[
                     (merged["Malzeme Grubu"].str.lower().str.contains("adawall duvar kağıdı")) &
-                    (merged["Kategori"].str.lower().str.strip() == "15.6 mtr")
+                    (merged["Kategori"].str.lower() == "15.6 mtr")
                 ]
             elif keyword == "adawall tutkal":
                 filtered = merged[
-                    (merged["Malzeme Grubu"].str.lower().str.contains("tutkal")) &
+                    (merged["Malzeme Grubu"].str.lower().str.contains("adawall tutkal")) &
                     (merged["Kategori"].str.lower().str.contains("200 gram"))
                 ]
             elif keyword == "adahome yastık":
-                filtered = merged[merged["Malzeme Grubu"].str.lower().str.contains("adahome") & merged["Malzeme Grubu"].str.lower().str.contains("yastık")]
+                filtered = merged[merged["Malzeme Grubu"].str.lower().str.contains("adahome.*yastık")]
+            elif keyword == "adapanel ürünleri":
+                thresholds = rule["threshold"] if isinstance(rule["threshold"], dict) else {}
+                paket_df = brand_df[brand_df["Malzeme Grubu"].str.lower().str.contains("paket")]
+                ozel_df = brand_df[brand_df["Malzeme Grubu"].str.lower().str.contains("özel üretim")]
+                paket_satis = paket_df["Net Satış Miktarı"].sum()
+                ozel_satis = ozel_df["Net Satış Miktarı"].sum()
+                if paket_satis < thresholds.get("Paket", float("inf")) and ozel_satis < thresholds.get("Özel Üretim", float("inf")):
+                    block += f"""
+                    <div class='normal-message mt-2'>
+                      🔹 <b>{rule['keyword']} satış</b>: Paket: <b>{paket_satis:.1f}</b>, Özel: <b>{ozel_satis:.1f}</b> (Hedef: 20 Paket ve 500 Özel Üretim)<br>
+                      ➤ {rule['message']}
+                    </div>
+                    """
+                continue
             else:
                 filtered = brand_df[brand_df["Malzeme Grubu"].str.lower().str.contains(keyword)]
 
-            product_sales = filtered["Net Satış Miktarı"].sum()
-            if product_sales < rule["threshold"]:
-                block += f"""
-                <div class='normal-message mt-2'>
-                  🔹 <b>{rule['keyword']}</b> satış: <b>{product_sales:.1f}</b> (Hedef: {rule['threshold']})<br>
-                  ➤ {rule['message']}
-                </div>
-                """
+            if not filtered.empty:
+                product_sales = filtered["Net Satış Miktarı"].sum()
+                if isinstance(rule["threshold"], dict):
+                    continue  # dict threshold zaten yukarıda işleniyor
+                if product_sales < rule["threshold"]:
+                    block += f"""
+                    <div class='normal-message mt-2'>
+                      🔹 <b>{rule['keyword']} satış</b>: <b>{product_sales:.1f}</b> (Hedef: {rule['threshold']})<br>
+                      ➤ {rule['message']}
+                    </div>
+                    """
 
         if block:
             block += "</div>"
@@ -262,20 +310,6 @@ def generate_combined_recommendations(df_cleaned):
         return "<div class='no-recommendation'>✅ Tüm markalarda yeterli satış ve öneri durumu görünmüyor.</div>"
 
     return "".join(combined_blocks)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -298,64 +332,148 @@ def group_missing_products_by_brand(products):
 
 
 
-def generate_missing_recommendations(satilmayan_urunler):
-    missing_rules = load_missing_rules()
-    recommendations = []
 
-    for rule in missing_rules:
-        keyword = rule["keyword"].strip()
-        message = rule["message"]
 
-        if any(keyword.lower() in urun.lower() for urun in satilmayan_urunler):
-            recommendations.append(f"🔹 <b>'{keyword}'</b> ile ilgili öneri: {message}")
-
-    return "<br>".join(recommendations) if recommendations else "✅ Satılmayan ürünler için özel bir öneri bulunmamaktadır."
 
 
 def generate_pie_charts(satilan_urunler, satilmayan_urunler, df):
+    import matplotlib.pyplot as plt
+    import base64
+    import io
+    import matplotlib.patches as mpatches
+
+    df.columns = df.columns.str.strip()
     categories = ["AdaHome", "AdaPanel", "AdaWall"]
     colors = ['#ffcc00', '#66b3ff', '#99ff99']
     chart_buffers = []
 
-    # Grafik 1 - Genel
-    fig1, ax1 = plt.subplots()
-    ax1.pie([len(satilan_urunler), len(satilmayan_urunler)],
-            labels=["Satılan", "Satılmayan"], autopct='%1.1f%%',
-            colors=["#ff6347", "#4caf50"], explode=(0, 0.1), shadow=True)
-    ax1.set_title("Toplam Ürün Çeşidi Satışı")
+    # --- GRAFİK 1: Satılan vs Satılmayan ürün adedi ---
+    fig1, ax1 = plt.subplots(figsize=(6, 6))  # Grafik boyutunu büyütüyoruz
+    ax1.pie(
+        [len(satilan_urunler), len(satilmayan_urunler)],
+        labels=["Satılan", "Satılmayan"],
+        autopct='%1.1f%%',
+        colors=["#4CAF50", "#FF6347"],
+        explode=(0.1, 0),  # Dilimlerden birini daha belirgin yapıyoruz
+        shadow=True,
+        startangle=90,
+        textprops={'fontsize': 12, 'fontweight': 'bold', 'ha': 'center'}  # Metin fontunu artırdık
+    )
+    ax1.set_title("Toplam Ürün Çeşidi Satışı", fontsize=14, fontweight='bold')
+    fig1.tight_layout()
     buf1 = io.BytesIO()
-    plt.savefig(buf1, format="png", dpi=200)
+    plt.savefig(buf1, format="png", dpi=200, bbox_inches='tight')
     buf1.seek(0)
     chart_buffers.append(base64.b64encode(buf1.read()).decode("utf8"))
     plt.close(fig1)
 
-    # Grafik 2 - Satılan Kategori (Doğrulandı)
-    fig2, ax2 = plt.subplots()
+    # --- GRAFİK 2: KDV'li satış tutarı yüzdesi + altta renkli TL açıklama ---
+    fig2, ax2 = plt.subplots(figsize=(6, 6), dpi=200)  # Grafik boyutunu büyütüyoruz
     df_satilan = df[df["Malzeme Grubu"].isin(satilan_urunler)]
-    cat_sales = {
-        cat: df_satilan[df_satilan["Malzeme Grubu"].str.contains(fr'\b{cat}\b', na=False, case=False)]["Net Satış Miktarı"].sum()
+
+    try:
+        tutar_column = "Kdv Li Net Satış Tutar (TL)"
+        df[tutar_column] = df[tutar_column].astype(float)
+    except KeyError:
+        tutar_column = "Kdv Li Net Satış Tutar"
+        df[tutar_column] = df[tutar_column].astype(float)
+
+    sales_by_category = {
+        cat: df_satilan[df_satilan["Malzeme Grubu"].str.contains(fr'\b{cat}\b', na=False, case=False)][tutar_column].sum()
         for cat in categories
     }
-    ax2.pie(cat_sales.values(), labels=cat_sales.keys(), autopct='%1.1f%%', colors=colors)
-    ax2.set_title("Satılan Ürünlerin Kategorik Dağılımı")
+
+    values = list(sales_by_category.values())
+    labels = list(sales_by_category.keys())
+
+    # Yüzde hesaplama
+    total_sales = sum(values)
+    percentages = [round((value / total_sales) * 100, 1) for value in values]
+
+    # Yüzdeyi ve tutarı birleştirip yazdırma
+    labels_with_percentage = [f"{label}: ₺{value:,.0f} ({percent}%)" for label, value, percent in zip(labels, values, percentages)]
+
+    wedges, texts, autotexts = ax2.pie(
+        values,
+        autopct='%1.1f%%',
+        startangle=90,
+        colors=colors,
+        pctdistance=0.75,
+        labeldistance=1.1,
+        textprops={'fontsize': 8,  'ha': 'center'}  # Metin fontunu artırdık
+    )
+
+    for i, text in enumerate(texts):
+        text.set_text(labels_with_percentage[i])  # Yüzdeyi de etiketlere ekliyoruz
+
+    ax2.set_title("KDV'li Net Satış Tutarına Göre Dağılım", fontsize=14, fontweight='bold')
+
+    # ALTTA RENKLİ KUTULAR + TL
+    legend_labels = [
+        f"{cat}: ₺{sales_by_category[cat]:,.0f} ({percentages[i]}%)" for i, cat in enumerate(categories)
+    ]
+    legend_patches = [
+        mpatches.Patch(color=colors[i], label=legend_labels[i]) for i in range(len(categories))
+    ]
+
+    ax2.legend(
+        handles=legend_patches,
+        loc='lower center',
+        bbox_to_anchor=(0.5, -0.25),
+        fontsize=10,
+        frameon=False
+    )
+
+    fig2.tight_layout()
     buf2 = io.BytesIO()
-    plt.savefig(buf2, format="png", dpi=200)
+    plt.savefig(buf2, format="png", dpi=200, bbox_inches='tight')
     buf2.seek(0)
     chart_buffers.append(base64.b64encode(buf2.read()).decode("utf8"))
     plt.close(fig2)
 
-    # Grafik 3 - Satılmayan Kategori
-    fig3, ax3 = plt.subplots()
-    unsold = {cat: sum(1 for u in satilmayan_urunler if cat in u) for cat in categories}
-    ax3.pie(unsold.values(), labels=unsold.keys(), autopct='%1.1f%%', colors=colors)
-    ax3.set_title("Satılmayan Ürünlerin Kategorik Dağılımı")
-    buf3 = io.BytesIO()
-    plt.savefig(buf3, format="png", dpi=200)
-    buf3.seek(0)
-    chart_buffers.append(base64.b64encode(buf3.read()).decode("utf8"))
-    plt.close(fig3)
-
     return chart_buffers
+
+
+
+
+
+
+
+
+
+from flask import send_file
+
+from flask import send_file, session
+
+import os
+
+
+
+
+
+from flask import send_file
+
+
+
+
+from flask import send_file
+
+
+
+
+
+
+
+
+
+
+import os
+import signal
+
+@app.route("/kapat")
+def kapat():
+    os.kill(os.getpid(), signal.SIGTERM)
+    return "Uygulama kapatılıyor..."
 
 
 @app.route("/filtered_sold_chart", methods=["POST"])
@@ -397,20 +515,15 @@ def filtered_chart():
 
 
 import os
-from flask import Response
+
 
 import threading
 from flask import render_template
 
-@app.route("/kapat", methods=["GET"])
-def kapat():
-    threading.Timer(1.5, lambda: os._exit(0)).start()
-    return render_template("kapat.html")
 
 
 
 
-@app.route("/", methods=["GET", "POST"])
 @app.route("/", methods=["GET", "POST"])
 def upload_file():
     recommendations_html = None
@@ -420,10 +533,11 @@ def upload_file():
     pie_chart_url = None
     rapor_tipi = None
     pie_chart_url2 = None
-    pie_chart_url3 = None
+    
     uploaded_filename = None
     combined_recommendations = None
-    grouped_missing = None  # ✅
+    grouped_missing = None
+    ciro = 0  # ✅ GET istekleri için tanımlı olsun
 
     if request.method == "POST" and 'file' in request.files:
         file = request.files['file']
@@ -446,11 +560,14 @@ def upload_file():
                 # ✅ Yeni öneri sistemi
                 combined_recommendations = generate_combined_recommendations(df_cleaned)
 
+                # ✅ Toplam Ciro Hesabı
+                ciro = df_cleaned["Kdv Li Net Satış Tutar"].sum()
+
                 # Sadece görsel gösterim için
                 missing_products_html = "<br>".join(sorted(satilmayan_urunler)) if satilmayan_urunler else "✅ Tüm ürünler satılmış!"
 
                 charts = generate_pie_charts(satilan_urunler, satilmayan_urunler, df_cleaned)
-                pie_chart_url, pie_chart_url2, pie_chart_url3 = charts
+                pie_chart_url, pie_chart_url2 = charts
 
             except Exception as e:
                 return f"Hata oluştu:<br><pre>{str(e)}</pre>"
@@ -462,11 +579,13 @@ def upload_file():
                            recommendations=recommendations_html,
                            pie_chart_url=pie_chart_url,
                            rapor_tipi=rapor_tipi,
+                           ciro=ciro,  # ✅ ciro template'e gönderiliyor
                            pie_chart_url2=pie_chart_url2,
-                           pie_chart_url3=pie_chart_url3,
+                           
                            uploaded_filename=uploaded_filename,
                            combined_recommendations=combined_recommendations,
                            grouped_missing_products=grouped_missing)
+
 
 
 

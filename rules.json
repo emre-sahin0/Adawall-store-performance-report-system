@@ -25,17 +25,17 @@
         "message": "Aylık 4 adet şezlong satış hedefinizin altında kaldığınızı görüyoruz. Şezlonglarımızın tamamı, fırınlanmış kayın ağacından üretilmiş tek tip kasa ile sunulmakta olup, kumaş seçiminde 3 farklı alternatif sunulmaktadır. 65 adet baskılı şezlong kumaşı, outdoor kullanım için uygun 14 adet su itici kumaş ve 13 adet delikli kumaştan oluşan KTLKOF kartelamızın bulunduğunu biliyor musunuz? Bu kumaş seçeneklerini müşterilerinize aktif olarak sunuyor musunuz? Su itici kumaşlarımızı ve delikli kumaşlarımızı sadece şezlonglarda değil, outdoor mobilyalar için döşemelik kumaş olarak; su itici kumaşlarımızı ayrıca koltuk takımlarında yastık yapımında ya da dış mekânda bulunan mobilyalarınızı koruma amaçlı örtü olarak da önermeyi unutmuyor musunuz?"
     },
     {
-        "keyword": "Adawall Duvar Kağıdı 10",
-        "threshold": 500,
+        "keyword": "Adawall Duvar Kağıdı 10m",
+        "threshold": 50,
         "message": "Aylık hedefimiz olan 50 rulo satışın altında kalındığını görüyoruz. Bu nedenle 1.06x10 metrelik (10,6 m²) rulolardan oluşan Seyyah, Dante, Octagon, Ephes, AdaKids ve seri sonu ürünlerimiz (Kalinka, Rumi, Signature, İndigo) için satışları artırmamız büyük önem taşımaktadır. Bildiğiniz üzere, seri sonu ürünlerde (Kalinka, Rumi, Signature, İndigo) ciddi bir indirim uygulanmaktadır. Bu ürünlere ait katalogların mağazanızda mevcut olup olmadığını kontrol etmenizi rica ederiz. Ayrıca, bu ürünleri aktif olarak müşterilerinize sunuyor musunuz, indirimli olduklarını belirtiyor musunuz ve size KDV dahil 350 TL’ye verdiğimiz bu ürünleri müşterilerinize işçilik dahil hangi fiyattan sunuyorsunuz ? Tavsiye ettiğimiz satış fiyatı 800 TL + işçiliktir. Promosyonlu ürünleri her gelen müşterinize mutlaka tanıtmanızı rica ediyoruz. Mağazanızda bu ürünler için özel bir “Promosyon Köşesi” oluşturarak dikkat çekici bir alan yaratabilirsiniz. Ayrıca, mağazanıza gelen ve kararsız kalan müşterilere, satış gerçekleşmese bile mutlaka Adawall Duvarında Gör uygulamasından bahsetmenizi önemle rica ederiz. Uygulama sayesinde müşteriler, beğendikleri duvar kağıdını kendi ev ortamlarında dijital olarak görebilir, bu da karar sürecini olumlu yönde etkileyebilir. Uygulama, Google Play ve Apple Store’da ücretsiz olarak indirilebilmektedir."
     },
     {
         "keyword": "AdaHome",
         "threshold": 100000,
-        "message": "genel öneri mesajı"
+        "message": ""
     },
     {
-        "keyword": "Adawall Duvar Kağıdı 15",
+        "keyword": "Adawall Duvar Kağıdı 15m",
         "threshold": 100,
         "message": "Aylık 100 rulo olan satış hedefinizin altında kaldığınızı görüyoruz. Bu nedenle 1.06x15.6 metrelik (16,5 m²) rulolardan oluşan Alfa, Tropicano, Seven, Beta, Vera, Roka, Omega, Hue ve İcon serilerinin satışını artırmanız büyük önem taşımaktadır. Bu ürünlerin katalogları mağazanızda mevcut mu? Mağazanıza gelen müşterilerde satış gerçekleşmediği ya da müşteri tereddüt yaşadığı durumlarda, alışveriş yapmadan çıkmadan önce onlara Google Play ve Apple Store’da yer alan Adawall Duvarında Gör uygulamamızdan bahsediyor musunuz? Bu uygulama sayesinde müşteriler, seçtikleri duvar kağıtlarını kendi ev ortamlarında dijital olarak deneyimleyebilir, böylece kafalarındaki soru işaretlerini giderebilirler. Bu bilgiyi her müşterinize mutlaka iletmenizi rica ederiz."
     },
@@ -47,7 +47,7 @@
     {
         "keyword": "AdaWall",
         "threshold": 1000000,
-        "message": "genel mesaj"
+        "message": ""
     },
     {
         "keyword": "AdaHome Yastık",
@@ -57,10 +57,19 @@
     {
         "keyword": "Adapanel",
         "threshold": {
-          "Paket": 20,
-          "Özel Üretim": 500
+            "Paket": 20,
+            "Özel Üretim": 500
         },
         "message": "Paket ve Özel Üretim ürünlerin satışları eşiklerin altında. Lütfen bu ürün gruplarına özel aksiyon alın."
-      }
-      
+    },
+    {
+        "keyword": "AdaPanel Ürünleri",
+        "threshold": 10000000000000,
+        "message": "Aylık hedefimiz olan 20 kutu ve 500 metre panel satışının altında kalındığını görüyoruz. Bu nedenle MDF AdaPanel, Akustik AdaPanel, PS AdaPanel Vol.1, PS AdaPanel Vol.2 ve PS AdaPanel Çıta kataloglarının mağazanızda eksiksiz şekilde bulunup bulunmadığını kontrol etmenizi rica ederiz. Mağazanıza gelen müşterilerde satış gerçekleşmediği ya da müşteri tereddüt yaşadığı durumlarda, alışveriş yapmadan önce mutlaka Google Play ve Apple Store’da yer alan “Adawall Duvarında Gör” uygulamamızdan bahsediyor musunuz? Bu uygulama sayesinde müşteriler, seçtikleri duvar panellerini kendi yaşam alanlarında dijital olarak deneyimleyebilir ve karar verme süreçlerini daha kolay hale getirebilirler. Bu bilgiyi her müşterinize mutlaka iletmenizi önemle tavsiye ediyoruz. Ayrıca bu ürünleri uygulayan ustalara, AdaPanel için özel olarak geliştirdiğimiz MS Polimer Esaslı tutkalları tavsiye etmenizi ve bu maliyetin işçilik ücretinden düşülebileceğini belirtmenizi öneriyoruz."
+    },
+    {
+        "keyword": "AdaPanel",
+        "threshold": 20000,
+        "message": ""
+    }
 ]

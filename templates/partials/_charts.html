@@ -1,23 +1,45 @@
 {% if pie_chart_url %}
-<h3 class="mt-5">📊 Satış Oranları</h3>
-<div class="row text-center">
-  <div class="col-md-6 mb-4">
-    <img src="data:image/png;base64,{{ pie_chart_url }}" alt="Pie 1" class="img-fluid">
+<!-- Satış Analizleri Başlığı Kutusu -->
+<div class="report-header mb-4 p-3 rounded text-center box-container">
+  <h2 class="sales-title">📊 Satış Analizleri</h2>
+</div>
+
+<div class="row justify-content-center g-3">
+  <div class="col-12 col-sm-8 col-md-6">
+    <div class="border rounded p-2 bg-white shadow-sm">
+      <img src="data:image/png;base64,{{ pie_chart_url }}" class="img-fluid" alt="Satış Dağılımı">
+    </div>
   </div>
-  <div class="col-md-6 mb-4">
-    <img src="data:image/png;base64,{{ pie_chart_url2 }}" alt="Pie 2" class="img-fluid">
-  </div>
-  <div class="col-md-6 mb-4">
-    <img src="data:image/png;base64,{{ pie_chart_url3 }}" alt="Pie 3" class="img-fluid">
-  </div>
-  <div class="col-md-6 mb-4">
-    <label for="soldFilter" class="form-label text-danger fw-bold">🔹 Satılan Ürünlerin Kategorilerini Seçin</label>
-    <select class="form-select mb-3" id="soldFilter" multiple>
-      <option value="AdaWall">AdaWall</option>
-      <option value="AdaHome">AdaHome</option>
-      <option value="AdaPanel">AdaPanel</option>
-    </select>
-    <div id="filteredSoldChartArea"></div>
+  <div class="col-12 col-sm-8 col-md-6">
+    <div class="border rounded p-2 bg-white shadow-sm">
+      <img src="data:image/png;base64,{{ pie_chart_url2 }}" class="img-fluid" alt="Tutar Dağılımı">
+    </div>
   </div>
 </div>
 {% endif %}
+
+<style>
+  /* Başlık kutusunun stilini belirleyelim */
+  .box-container {
+    background-color: #1E90FF; /* Kutu rengi */
+    padding: 30px;
+    border-radius: 15px; /* Köşeleri yuvarlak yap */
+    max-width: 80%; /* Kutu genişliğini ayarla */
+    margin: 0 auto; /* Ortalamak için */
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); /* Gölge efekti */
+  }
+
+  /* Satış Analizleri başlığını büyüt ve sağdan sola yaz */
+  .sales-title {
+    font-size: 50px; /* Yazı boyutunu büyük yap */
+    color: white; /* Yazı rengini beyaz yap */
+    font-weight: bold; /* Kalın yazı */
+    letter-spacing: 2px; /* Harf aralığını biraz aç */
+    white-space: nowrap; /* Metnin satırlara bölünmesini engelle */
+    text-align: center; /* Ortalanmış metin */
+    animation: slideRight 5s ease-in-out infinite; /* Sağdan sola kayan animasyon */
+  }
+
+  /* Animasyon: Sağdan sola kaydırma */
+  
+</style>

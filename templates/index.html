@@ -11,27 +11,37 @@
 </head>
 
 <body>
-  
-  
-  {% if not table_data %}
-  <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
+
+  <!-- ✅ ÜST MENÜ (PDF dışı kalır) -->
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4 no-print">
     <div class="container-fluid">
       <span class="navbar-brand fw-bold">📈 Satış Analiz Paneli</span>
-      <div class="d-flex">
-        {% if table_data %}
-        <a href="{{ url_for('upload_file') }}" class="btn btn-outline-light me-2">🔄 Yeni Dosya Yükle</a>
-        {% endif %}
-        <a href="{{ url_for('admin_panel') }}" class="btn btn-warning">🔧 Admin Paneli</a>
+      <div class="d-flex gap-2">
+        <div class="top-buttons no-print">
+          <a href="{{ url_for('upload_file') }}" class="btn btn-outline-primary">🔄 Yeni Dosya Yükle</a>
+          <a href="{{ url_for('admin_panel') }}" class="btn btn-warning">🛠 Admin Paneli</a>
+          <a href="/kapat" class="btn btn-danger">❌ Kapat</a>
+          <<!-- PDF butonunu ekliyoruz -->
+
+
+
+          <div class="text-center mt-3">
+
+</div>
+
+        </div>
+        
       </div>
     </div>
   </nav>
+
+  {% if not table_data %}
   <div id="upload-section">
     <div class="dashboard-container">
       <div class="d-flex justify-content-between align-items-center mb-4">
         <h2>📂 Satış Verilerini Yükleyin</h2>
-        
       </div>
-  
+
       <div class="row g-3">
         <div class="col-md-6">
           <h4 class="section-title">📆 Aylık Satış Verisi</h4>
@@ -40,7 +50,7 @@
             <button type="submit" class="btn btn-success w-100">📤 Aylık Dosya Yükle</button>
           </form>
         </div>
-  
+
         <div class="col-md-6">
           <h4 class="section-title">📅 Yıllık Satış Verisi</h4>
           <form action="/upload_yearly" method="post" enctype="multipart/form-data">
@@ -48,56 +58,53 @@
             <button type="submit" class="btn btn-info w-100">📤 Yıllık Dosya Yükle</button>
           </form>
         </div>
-      
+      </div>
     </div>
   </div>
-{% endif %}
+  {% endif %}
 
-  
-    {% include 'partials/_file_info.html' %}
-    {% include 'partials/_data_table.html' %}
+  {% include 'partials/_file_info.html' %}
+  {% include 'partials/_data_table.html' %}
 
-    {% if combined_recommendations %}
-    <div class="recommendations-container mt-4">
-      <div class="brand-recommendation-wrapper">
-        {{ combined_recommendations|safe }}
+  {% if combined_recommendations %}
+  <div class="recommendations-container mt-4">
+    <div class="brand-recommendation-wrapper">
+      {{ combined_recommendations|safe }}
+    </div>
+  </div>
+  {% endif %}
+
+  <!--{% if grouped_missing_products %}
+  <div class="alert alert-danger mt-4">
+    <h5 class="mb-3">⚠️ SATILMAYAN ÜRÜNLER</h5>
+    <div class="row">
+      {% for brand, products in grouped_missing_products.items() %}
+      <div class="col-md-4">
+        <h6 class="text-uppercase fw-bold text-danger">{{ brand }}</h6>
+        <ul class="list-unstyled">
+          {% for product in products[:5] %}
+          <li>• {{ product }}</li>
+          {% endfor %}
+        </ul>
+
+        {% if products|length > 5 %}
+        <ul id="hidden-{{ brand }}" class="list-unstyled" style="display: none;">
+          {% for product in products[5:] %}
+          <li>• {{ product }}</li>
+          {% endfor %}
+        </ul>
+        <button class="btn btn-outline-danger btn-sm" onclick="toggleList('{{ brand }}')">Daha Fazla Göster</button>
+        {% endif %}
       </div>
+      {% endfor %}
     </div>
-    {% endif %}
+  </div>
+  {% endif %}-->
 
-    {% if grouped_missing_products %}
-    <div class="alert alert-danger mt-4">
-      <h5 class="mb-3">⚠️ SATILMAYAN ÜRÜNLER</h5>
-      <div class="row">
-        {% for brand, products in grouped_missing_products.items() %}
-        <div class="col-md-4">
-          <h6 class="text-uppercase fw-bold text-danger">{{ brand }}</h6>
-          <ul class="list-unstyled">
-            {% for product in products[:5] %}
-            <li>• {{ product }}</li>
-            {% endfor %}
-          </ul>
-    
-          {% if products|length > 5 %}
-          <ul id="hidden-{{ brand }}" class="list-unstyled" style="display: none;">
-            {% for product in products[5:] %}
-            <li>• {{ product }}</li>
-            {% endfor %}
-          </ul>
-          <button class="btn btn-outline-danger btn-sm" onclick="toggleList('{{ brand }}')">Daha Fazla Göster</button>
-          {% endif %}
-        </div>
-        {% endfor %}
-      </div>
-    </div>
-    {% endif %}
-    
+  {% include 'partials/_charts.html' %}
 
-    {% include 'partials/_charts.html' %}
-
-    <div class="pdf-button-container">
-      <button class="pdf-button" onclick="generatePDF()">📄 PDF Oluştur</button>
-    </div>
+  <div class="pdf-button-container">
+    <button class="pdf-btn" onclick="generatePDF()">📄 PDF Oluştur</button>
   </div>
 
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
@@ -106,14 +113,11 @@
   <script>
     function toggleList(brand) {
       const list = document.getElementById(`hidden-${brand}`);
-      if (list.style.display === "none") {
-        list.style.display = "block";
-      } else {
-        list.style.display = "none";
-      }
+      list.style.display = list.style.display === "none" ? "block" : "none";
     }
+    
   </script>
-  
+
 </body>
 
 </html>
