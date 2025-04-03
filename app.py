@@ -353,21 +353,36 @@ def filtered_chart():
 
 
 
+""""@app.route("/filtered_sold_chart", methods=["POST"])
+def filtered_chart():
+    data_dict = {}
+    if 'data' in session:
+        df = pd.DataFrame(session['data'])
+        categories = ["AdaHome", "AdaPanel", "AdaWall"]
+        for cat in categories:
+            cat_df = df[df["Malzeme Grubu"].str.contains(cat, case=False, na=False)]
+            data_dict[cat] = cat_df["Net Satış Miktarı"].sum()
 
+    selected = request.get_json().get("selected_categories", [])
+    total = sum(data_dict.get(k, 0) for k in selected)
 
-import os
-from flask import Response
+    fig, ax = plt.subplots(figsize=(4, 4))
+    if total == 0:
+        ax.text(0.5, 0.5, "Seçilen kategorilerde satış yok", ha="center", va="center", fontsize=10)
+        ax.axis("off")
+    else:
+        values = {k: data_dict[k] for k in selected}
+        labels = [f"{k}: {v:.0f} adet\n({v/total*100:.1f}%)" for k, v in values.items()]
+        ax.pie(values.values(), labels=labels, startangle=140, textprops={'fontsize': 10})
+        ax.set_title("Satılan Ürünler (Filtrelenmiş)", fontsize=12, fontweight='bold')
 
-import threading
-from flask import render_template
-
-@app.route("/kapat", methods=["GET"])
-def kapat():
-    threading.Timer(1.5, lambda: os._exit(0)).start()
-    return render_template("kapat.html")
-
-
-
+    img = io.BytesIO()
+    plt.tight_layout()
+    plt.savefig(img, format='png', dpi=200)
+    img.seek(0)
+    encoded = base64.b64encode(img.getvalue()).decode('utf8')
+    plt.close(fig)
+    return encoded"""
 
 @app.route("/", methods=["GET", "POST"])
 def upload_file():
@@ -472,9 +487,5 @@ def admin_panel():
 from flask import Flask, request, render_template, session
 
 
-import threading
-import webbrowser
-
 if __name__ == "__main__":
-    threading.Timer(1.0, lambda: webbrowser.open("http://127.0.0.1:5000")).start()
-    app.run(debug=True, use_reloader=False)
+    app.run(debug=True)
