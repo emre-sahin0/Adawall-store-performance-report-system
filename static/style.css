@@ -1,5 +1,5 @@
 body {
-  background: linear-gradient(135deg, #00d7f4, #92eb92);
+  background: linear-gradient(135deg, #b0ffb0, #6cffff);
   min-height: 100vh;
   padding: 30px;
 }
@@ -172,8 +172,15 @@ h2, h3 {
   margin-top: 6px;
 }
 @media print {
-  #upload-section {
+  /* Tüm button, form ve nav elemanlarını gizle */
+  button,
+  form,
+  nav,
+  .pdf-button-container,
+  .no-print {
     display: none !important;
   }
 }
+
+
 

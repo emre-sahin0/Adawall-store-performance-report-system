@@ -3,6 +3,10 @@
     <h2 class="m-0">
       <span class="store-name">{{ uploaded_filename|replace('.csv','') }}</span> — {{ rapor_tipi }} <span style="letter-spacing: 1px;">SATIŞ ANALİZİ</span>
     </h2>
+    <div>
+      <a href="/" class="pdf-button-container">🔁 Yeni Dosya Yükle</a>
+      <a href="/admin" class="pdf-button-container">⚙️ Admin Paneli</a>
+    </div>
   {% else %}
     <h2 class="text-muted">Lütfen CSV Dosyası Yükleyin</h2>
   {% endif %}

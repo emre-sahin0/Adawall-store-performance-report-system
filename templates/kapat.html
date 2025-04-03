@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <title>Uygulama Kapatılıyor</title>
+  <style>
+    body {
+      background-color: #f8f9fa;
+      text-align: center;
+      padding-top: 100px;
+      font-family: Arial, sans-serif;
+    }
+
+    .spinner {
+      border: 8px solid #f3f3f3;
+      border-top: 8px solid #3498db;
+      border-radius: 50%;
+      width: 80px;
+      height: 80px;
+      animation: spin 1.2s linear forwards;
+
+      margin: 20px auto;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .message {
+      font-size: 24px;
+      font-weight: bold;
+      color: #333;
+    }
+  </style>
+</head>
+<body>
+  <div class="spinner"></div>
+  <div class="message">Uygulama kapatılıyor...</div>
+</body>
+<script>
+    setTimeout(() => {
+      document.querySelector(".message").innerText = "✅ Kapatıldı";
+    }, 1200);
+  </script>
+  
+</html>

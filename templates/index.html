@@ -65,7 +65,7 @@
     </div>
     {% endif %}
 
-    {% if grouped_missing_products %}
+    <!--{% if grouped_missing_products %}
     <div class="alert alert-danger mt-4">
       <h5 class="mb-3">⚠️ SATILMAYAN ÜRÜNLER</h5>
       <div class="row">
@@ -90,13 +90,17 @@
         {% endfor %}
       </div>
     </div>
-    {% endif %}
+    {% endif %}-->
     
 
     {% include 'partials/_charts.html' %}
 
+    
     <div class="pdf-button-container">
       <button class="pdf-button" onclick="generatePDF()">📄 PDF Oluştur</button>
+      <form action="/kapat" method="get" class="d-inline">
+        <button class="no-print">❌ Uygulamayı Kapat</button>
+      </form>
     </div>
   </div>
 

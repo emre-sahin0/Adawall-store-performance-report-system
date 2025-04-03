@@ -1,23 +1,28 @@
 {% if pie_chart_url %}
-<h3 class="mt-5">📊 Satış Oranları</h3>
-<div class="row text-center">
-  <div class="col-md-6 mb-4">
-    <img src="data:image/png;base64,{{ pie_chart_url }}" alt="Pie 1" class="img-fluid">
-  </div>
-  <div class="col-md-6 mb-4">
-    <img src="data:image/png;base64,{{ pie_chart_url2 }}" alt="Pie 2" class="img-fluid">
-  </div>
-  <div class="col-md-6 mb-4">
-    <img src="data:image/png;base64,{{ pie_chart_url3 }}" alt="Pie 3" class="img-fluid">
-  </div>
-  <div class="col-md-6 mb-4">
-    <label for="soldFilter" class="form-label text-danger fw-bold">🔹 Satılan Ürünlerin Kategorilerini Seçin</label>
-    <select class="form-select mb-3" id="soldFilter" multiple>
-      <option value="AdaWall">AdaWall</option>
-      <option value="AdaHome">AdaHome</option>
-      <option value="AdaPanel">AdaPanel</option>
-    </select>
-    <div id="filteredSoldChartArea"></div>
-  </div>
-</div>
-{% endif %}
+    <h3 class="mt-5">📊 Satış Oranları</h3>
+    <div class="row text-center">
+      <!-- 1. Grafik -->
+      <div class="col-md-6 mb-4">
+        <img src="data:image/png;base64,{{ pie_chart_url }}" alt="Pie 1" class="img-fluid">
+      </div>
+    
+      <!-- 2. Grafik -->
+      <div class="col-md-6 mb-4">
+        <img src="data:image/png;base64,{{ pie_chart_url2 }}" alt="Pie 2" class="img-fluid">
+      </div>
+    
+      <!-- 3. Grafik -->
+      <div class="col-md-6 mb-4">
+        <img src="data:image/png;base64,{{ pie_chart_url3 }}" alt="Pie 3" class="img-fluid">
+      </div>
+      <div class="col-md-6 mb-4">
+        <label for="soldFilter" class="form-label text-danger fw-bold">🔹 Satılan Ürünlerin Kategorilerini Seçin</label>
+        <select class="form-select mb-3" id="soldFilter" multiple>
+          <option value="AdaWall">AdaWall</option>
+          <option value="AdaHome">AdaHome</option>
+          <option value="AdaPanel">AdaPanel</option>
+        </select>
+        <div id="filteredSoldChartArea"></div>
+      </div>
+    </div>
+    {% endif %}
