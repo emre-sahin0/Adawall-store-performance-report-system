@@ -170,72 +170,113 @@ def detect_and_extract_columns(file_path):
 
 
 
-def generate_combined_recommendations(df, satilmayan_urunler):
+def generate_combined_recommendations(df_cleaned):
+    import pandas as pd
+    import os
+
     rules = load_rules()
-    missing_rules = load_missing_rules()
-    grouped_df = df.groupby("Malzeme Grubu", as_index=False).sum()
+    ANA_TABLO_PATH = "ana_tablo.csv"
+
+    if not os.path.exists(ANA_TABLO_PATH):
+        return "<div class='no-recommendation'>❗ ana_tablo.csv bulunamadı.</div>"
+
+    ana_tablo_df = pd.read_csv(ANA_TABLO_PATH, encoding="utf-8", sep=";")
+    ana_tablo_df["Malzeme Grubu"] = ana_tablo_df["Malzeme Grubu"].astype(str).str.strip()
+    ana_tablo_df["Kategori"] = ana_tablo_df["Kategori"].astype(str).str.strip()
+    df_cleaned["Malzeme Grubu"] = df_cleaned["Malzeme Grubu"].astype(str).str.strip()
+    df_cleaned["Kategori"] = df_cleaned["Kategori"].astype(str).str.strip()
+
+    ana_tablo_df["key"] = ana_tablo_df["Malzeme Grubu"] + "||" + ana_tablo_df["Kategori"]
+    df_cleaned["key"] = df_cleaned["Malzeme Grubu"] + "||" + df_cleaned["Kategori"]
+
+    merged = ana_tablo_df.merge(
+        df_cleaned[["key", "Net Satış Miktarı"]],
+        on="key",
+        how="left",
+        suffixes=("", "_Gercek")
+    )
+    merged["Net Satış Miktarı"] = merged["Net Satış Miktarı_Gercek"].fillna(0)
+    merged = merged.drop(columns=["Net Satış Miktarı_Gercek", "key"])
 
     combined_blocks = []
     brands = ["adahome", "adawall", "adapanel"]
 
     for brand in brands:
-        brand_title = brand.upper()
-        icon = "🏠" if brand == "adahome" else "🧱" if brand == "adawall" else "🧩"
+        block = ""
+        brand_df = merged[merged["Malzeme Grubu"].str.lower().str.contains(brand)]
 
-        # Genel durum kutusu (satış azsa)
         general_rule = next((r for r in rules if r["keyword"].lower() == brand), None)
-        brand_df = grouped_df[grouped_df["Malzeme Grubu"].str.contains(brand, case=False, na=False)]
         total_sales = brand_df["Net Satış Miktarı"].sum()
 
-        block = ""
+        icon = "🏠" if brand == "adahome" else "🧱" if brand == "adawall" else "🧩"
+        brand_title = brand.upper()
 
-        if general_rule and total_sales < 1000000:
+        if general_rule and total_sales < general_rule["threshold"]:
             block += f"""
-            <div class="brand-recommendation">
-              <div class="brand-header">{icon} <b>{brand_title} GENEL DURUM RAPORU</b> {icon}</div>
-              <div class="sales-info">📉 Toplam Satış: <b>{total_sales:.1f}</b> | </b></div>
-              <div class="recommendation-box">💡 <b>ÖNERİLERİMİZ:</b> {general_rule["message"]}</div>
+            <div class='brand-recommendation'>
+                <div class='brand-header'>{icon} <b>{brand_title} GENEL DURUM</b> {icon}</div>
+                <div class='sales-info'>📉 Toplam Satış: <b>{total_sales:.1f}</b></div>
+                <div class='recommendation-box'>💡 <b>ÖNERİ:</b> {general_rule['message']}</div>
             """
 
-        # Ürün bazlı az satış önerileri
         product_rules = [r for r in rules if r["keyword"].lower().startswith(brand) and r["keyword"].lower() != brand]
+
         for rule in product_rules:
-            match = grouped_df[grouped_df["Malzeme Grubu"].str.contains(rule["keyword"], case=False, na=False)]
-            if not match.empty:
-                sales = match["Net Satış Miktarı"].sum()
-                if sales < rule["threshold"]:
-                    block += f"""
-                    <div class="normal-message mt-2">
-                      <span class="title">🔹 '{rule["keyword"]}' satışı: {sales:.1f} (Hedef: {rule["threshold"]})</span>
-                      ➤ {rule["message"]}
-                    </div>
-                    """
+            keyword = rule["keyword"].lower()
 
-        # Satılmayan ürün önerileri
-        for rule in missing_rules:
-            if rule["keyword"].lower().startswith(brand):
-                if any(rule["keyword"].lower() in u.lower() for u in satilmayan_urunler):
-                    block += f"""
-                    <div class="normal-message red">
-                        <div>
-                        <span class="title">❌ <b>'{rule["keyword"]}'</b></span>
-                         <span style="color: #d63031; font-weight: bold; margin-left: 10px;">Bu üründen <u>0 adet</u> satmışsınız!</span>
-                            </div>
-                            <div style="margin-top: 5px;">
-                     ➤ {rule["message"]}
-                        </div>
-                    </div>
-                            """
+            # Özel kural: Adawall Duvar Kağıdı 10 -> kategori = "10.0 MTR"
+            if keyword == "adawall duvar kağıdı 10":
+                filtered = merged[
+                    (merged["Malzeme Grubu"].str.lower().str.contains("adawall duvar kağıdı")) &
+                    (merged["Kategori"].str.lower().str.strip() == "10.0 mtr")
+                ]
+            elif keyword == "adawall duvar kağıdı 15":
+                filtered = merged[
+                    (merged["Malzeme Grubu"].str.lower().str.contains("adawall duvar kağıdı")) &
+                    (merged["Kategori"].str.lower().str.strip() == "15.6 mtr")
+                ]
+            elif keyword == "adawall tutkal":
+                filtered = merged[
+                    (merged["Malzeme Grubu"].str.lower().str.contains("tutkal")) &
+                    (merged["Kategori"].str.lower().str.contains("200 gram"))
+                ]
+            elif keyword == "adahome yastık":
+                filtered = merged[merged["Malzeme Grubu"].str.lower().str.contains("adahome") & merged["Malzeme Grubu"].str.lower().str.contains("yastık")]
+            else:
+                filtered = brand_df[brand_df["Malzeme Grubu"].str.lower().str.contains(keyword)]
 
+            product_sales = filtered["Net Satış Miktarı"].sum()
+            if product_sales < rule["threshold"]:
+                block += f"""
+                <div class='normal-message mt-2'>
+                  🔹 <b>{rule['keyword']}</b> satış: <b>{product_sales:.1f}</b> (Hedef: {rule['threshold']})<br>
+                  ➤ {rule['message']}
+                </div>
+                """
 
         if block:
-            block += "</div>"  # brand-recommendation bitişi
+            block += "</div>"
             combined_blocks.append(block)
 
     if not combined_blocks:
-        return """<div class="no-recommendation">✅ Tüm markalarda yeterli satış ve öneri durumu görünmüyor.</div>"""
+        return "<div class='no-recommendation'>✅ Tüm markalarda yeterli satış ve öneri durumu görünmüyor.</div>"
 
     return "".join(combined_blocks)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 def group_missing_products_by_brand(products):
@@ -353,37 +394,23 @@ def filtered_chart():
 
 
 
-""""@app.route("/filtered_sold_chart", methods=["POST"])
-def filtered_chart():
-    data_dict = {}
-    if 'data' in session:
-        df = pd.DataFrame(session['data'])
-        categories = ["AdaHome", "AdaPanel", "AdaWall"]
-        for cat in categories:
-            cat_df = df[df["Malzeme Grubu"].str.contains(cat, case=False, na=False)]
-            data_dict[cat] = cat_df["Net Satış Miktarı"].sum()
 
-    selected = request.get_json().get("selected_categories", [])
-    total = sum(data_dict.get(k, 0) for k in selected)
 
-    fig, ax = plt.subplots(figsize=(4, 4))
-    if total == 0:
-        ax.text(0.5, 0.5, "Seçilen kategorilerde satış yok", ha="center", va="center", fontsize=10)
-        ax.axis("off")
-    else:
-        values = {k: data_dict[k] for k in selected}
-        labels = [f"{k}: {v:.0f} adet\n({v/total*100:.1f}%)" for k, v in values.items()]
-        ax.pie(values.values(), labels=labels, startangle=140, textprops={'fontsize': 10})
-        ax.set_title("Satılan Ürünler (Filtrelenmiş)", fontsize=12, fontweight='bold')
+import os
+from flask import Response
 
-    img = io.BytesIO()
-    plt.tight_layout()
-    plt.savefig(img, format='png', dpi=200)
-    img.seek(0)
-    encoded = base64.b64encode(img.getvalue()).decode('utf8')
-    plt.close(fig)
-    return encoded"""
+import threading
+from flask import render_template
 
+@app.route("/kapat", methods=["GET"])
+def kapat():
+    threading.Timer(1.5, lambda: os._exit(0)).start()
+    return render_template("kapat.html")
+
+
+
+
+@app.route("/", methods=["GET", "POST"])
 @app.route("/", methods=["GET", "POST"])
 def upload_file():
     recommendations_html = None
@@ -396,7 +423,7 @@ def upload_file():
     pie_chart_url3 = None
     uploaded_filename = None
     combined_recommendations = None
-    grouped_missing = None  # ✅ Başlangıçta tanımlandı
+    grouped_missing = None  # ✅
 
     if request.method == "POST" and 'file' in request.files:
         file = request.files['file']
@@ -405,23 +432,21 @@ def upload_file():
             file_path = os.path.join(UPLOAD_FOLDER, file.filename)
             file.save(file_path)
             try:
-                # Eski satır:
-# df_cleaned = detect_and_extract_columns(file_path)
-
-# Yeni satır:
                 df_cleaned, rapor_tipi = detect_and_extract_columns(file_path)
-
                 session['data'] = df_cleaned.to_dict(orient="records")
                 table_data = df_cleaned.to_dict(orient="records")
 
+                # ✅ Satılan ürünler
                 satilan_urunler = set(df_cleaned["Malzeme Grubu"].astype(str).str.strip())
-                satilmayan_urunler = urun_katalogu - satilan_urunler
 
-                # ✅ Satılmayan ürünleri markalara göre gruplandır
+                # ✅ Katalogtan eksikleri tespit et (sadece görüntü için)
+                satilmayan_urunler = urun_katalogu - satilan_urunler
                 grouped_missing = group_missing_products_by_brand(satilmayan_urunler)
 
-                combined_recommendations = generate_combined_recommendations(df_cleaned, satilmayan_urunler)
+                # ✅ Yeni öneri sistemi
+                combined_recommendations = generate_combined_recommendations(df_cleaned)
 
+                # Sadece görsel gösterim için
                 missing_products_html = "<br>".join(sorted(satilmayan_urunler)) if satilmayan_urunler else "✅ Tüm ürünler satılmış!"
 
                 charts = generate_pie_charts(satilan_urunler, satilmayan_urunler, df_cleaned)
@@ -441,7 +466,8 @@ def upload_file():
                            pie_chart_url3=pie_chart_url3,
                            uploaded_filename=uploaded_filename,
                            combined_recommendations=combined_recommendations,
-                           grouped_missing_products=grouped_missing)  # ✅ burada eklendi
+                           grouped_missing_products=grouped_missing)
+
 
 
 
@@ -487,5 +513,9 @@ def admin_panel():
 from flask import Flask, request, render_template, session
 
 
+import threading
+import webbrowser
+
 if __name__ == "__main__":
-    app.run(debug=True)
+    threading.Timer(1.0, lambda: webbrowser.open("http://127.0.0.1:5000")).start()
+    app.run(debug=True, use_reloader=False)
