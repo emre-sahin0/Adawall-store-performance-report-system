@@ -123,11 +123,12 @@ def detect_and_extract_columns(file_path):
             
             rapor_tipi = f"{ay_ismi} Ayı İçin Aylık Satış Analizi"
         elif 76 <= days <= 110:
-            rapor_tipi = "3 Aylık"
+            rapor_tipi = "3 Aylık Satış Analizi"
+
         elif 160 <= days <= 220:
-            rapor_tipi = "6 Aylık"
+            rapor_tipi = "6 Aylık Satış Analizi"
         elif 340 <= days <= 385:
-            rapor_tipi = "Yıllık"
+            rapor_tipi = "Yıllık Satış Analizi"
         else:
             rapor_tipi = f"{days} Günlük"
     else:
@@ -204,6 +205,19 @@ def generate_combined_recommendations(df_cleaned):
     import pandas as pd
     import os
 
+    def get_unit_from_keyword(keyword):
+        keyword = keyword.lower()
+        if "kumaş" in keyword or "perde" in keyword:
+            return "metre"
+        elif any(kw in keyword for kw in ["puf", "mobilya", "yastık", "şezlong"]):
+            return "adet"
+        elif "tutkal" in keyword:
+            return "adet"
+        elif any(kw in keyword for kw in ["adawall 16.5 m2'lik rulo", "adawall 10.6 m2'lik rulo","duvar kağıdı","adawall duvar kağıdı"]):
+            return "rulo"
+        else:
+            return ""
+
     rules = load_rules()
     ANA_TABLO_PATH = "ana_tablo.csv"
 
@@ -234,34 +248,32 @@ def generate_combined_recommendations(df_cleaned):
     for brand in brands:
         block = ""
         brand_df = merged[merged["Malzeme Grubu"].str.lower().str.contains(brand)]
-        icon = "🏠" if brand == "adahome" else "🧱" if brand == "adawall" else "🧩"
+        icon = "🏠" if brand == "adahome" else "🧱" if brand == "adawall" else "🧹"
         brand_title = brand.upper()
 
-        # ✅ Genel öneriyi yakala (ilk sayısal olanı al)
         general_rule = next((r for r in rules if r["keyword"].lower() == brand and isinstance(r["threshold"], (int, float))), None)
         total_sales = brand_df["Net Satış Miktarı"].sum()
 
         if general_rule and total_sales < general_rule["threshold"]:
             block += f"""
-            <div class='brand-recommendation'>
-                <div class='brand-header'>{icon} <b>{brand_title} GENEL DURUM</b> {icon}</div>
-                <div class='sales-info'>📉 Toplam Satış: <b>{total_sales:.1f}</b></div>
-                <div class='recommendation-box'>💡 <b>ÖNERİ:</b> {general_rule['message']}</div>
+            <div class="brand-recommendation">
+              <div class="brand-header">{icon} <b>{brand_title} GENEL DURUM RAPORU</b> {icon}</div>
+              <div class="sales-info">📉 Toplam Satış Adeti: <b>{total_sales:.1f}</b></div>
+              <div class="recommendation-box">💡 <b>ÖNERİLERİMİZ:</b> {general_rule["message"]}</div>
             """
 
-        # ✅ Ürün bazlı kurallar
         product_rules = [r for r in rules if r["keyword"].lower().startswith(brand) and r["keyword"].lower() != brand]
 
         for rule in product_rules:
             keyword = rule["keyword"].lower()
             filtered = pd.DataFrame()
 
-            if keyword == "adawall duvar kağıdı 10m":
+            if keyword == "adawall 10.6 m2'lik rulo":
                 filtered = merged[
                     (merged["Malzeme Grubu"].str.lower().str.contains("adawall duvar kağıdı")) &
                     (merged["Kategori"].str.lower() == "10.0 mtr")
                 ]
-            elif keyword == "adawall duvar kağıdı 15m":
+            elif keyword == "adawall 16.5 m2'lik rulo":
                 filtered = merged[
                     (merged["Malzeme Grubu"].str.lower().str.contains("adawall duvar kağıdı")) &
                     (merged["Kategori"].str.lower() == "15.6 mtr")
@@ -271,6 +283,9 @@ def generate_combined_recommendations(df_cleaned):
                     (merged["Malzeme Grubu"].str.lower().str.contains("adawall tutkal")) &
                     (merged["Kategori"].str.lower().str.contains("200 gram"))
                 ]
+            elif keyword == "adahome döşemelik kumaş":
+                filtered = brand_df[brand_df["Malzeme Grubu"].str.lower().str.contains("adahome.*kumaş")]
+                
             elif keyword == "adahome yastık":
                 filtered = merged[merged["Malzeme Grubu"].str.lower().str.contains("adahome.*yastık")]
             elif keyword == "adapanel ürünleri":
@@ -282,8 +297,8 @@ def generate_combined_recommendations(df_cleaned):
                 if paket_satis < thresholds.get("Paket", float("inf")) and ozel_satis < thresholds.get("Özel Üretim", float("inf")):
                     block += f"""
                     <div class='normal-message mt-2'>
-                      🔹 <b>{rule['keyword']} satış</b>: Paket: <b>{paket_satis:.1f}</b>, Özel: <b>{ozel_satis:.1f}</b> (Hedef: 20 Paket ve 500 Özel Üretim)<br>
-                      ➤ {rule['message']}
+                      🔹 <b>{rule['keyword']} satış</b>: Paket: <b>{paket_satis:.1f} Adet </b>, Özel: <b>{ozel_satis:.1f} Metre</b> (Hedef: 20 Paket ve 500 Metre Özel Üretim)<br>
+                      ➔ {rule['message']}
                     </div>
                     """
                 continue
@@ -293,12 +308,14 @@ def generate_combined_recommendations(df_cleaned):
             if not filtered.empty:
                 product_sales = filtered["Net Satış Miktarı"].sum()
                 if isinstance(rule["threshold"], dict):
-                    continue  # dict threshold zaten yukarıda işleniyor
+                    continue
+                birim = get_unit_from_keyword(keyword)
+                hedef_birim = " Rulo" if "duvar kağıdı" in keyword else (f" {birim}" if birim else "")
                 if product_sales < rule["threshold"]:
                     block += f"""
                     <div class='normal-message mt-2'>
-                      🔹 <b>{rule['keyword']} satış</b>: <b>{product_sales:.1f}</b> (Hedef: {rule['threshold']})<br>
-                      ➤ {rule['message']}
+                      🔹 <b>{rule['keyword']} Satışınız</b>: <b>{product_sales:.1f} {birim}</b> (Hedef: {rule['threshold']}{hedef_birim})<br>
+                      ➔ {rule['message']}
                     </div>
                     """
 
@@ -310,6 +327,7 @@ def generate_combined_recommendations(df_cleaned):
         return "<div class='no-recommendation'>✅ Tüm markalarda yeterli satış ve öneri durumu görünmüyor.</div>"
 
     return "".join(combined_blocks)
+
 
 
 
@@ -341,6 +359,7 @@ def generate_pie_charts(satilan_urunler, satilmayan_urunler, df):
     import base64
     import io
     import matplotlib.patches as mpatches
+    from adjustText import adjust_text
 
     df.columns = df.columns.str.strip()
     categories = ["AdaHome", "AdaPanel", "AdaWall"]
@@ -349,7 +368,7 @@ def generate_pie_charts(satilan_urunler, satilmayan_urunler, df):
 
     # --- GRAFİK 1: Satılan vs Satılmayan ürün adedi ---
     fig1, ax1 = plt.subplots(figsize=(6, 6))  # Grafik boyutunu büyütüyoruz
-    ax1.pie(
+    wedges, texts, autotexts = ax1.pie(
         [len(satilan_urunler), len(satilmayan_urunler)],
         labels=["Satılan", "Satılmayan"],
         autopct='%1.1f%%',
@@ -357,9 +376,12 @@ def generate_pie_charts(satilan_urunler, satilmayan_urunler, df):
         explode=(0.1, 0),  # Dilimlerden birini daha belirgin yapıyoruz
         shadow=True,
         startangle=90,
-        textprops={'fontsize': 12, 'fontweight': 'bold', 'ha': 'center'}  # Metin fontunu artırdık
+        textprops={'fontsize': 12, 'fontweight': 'bold', 'ha': 'center'},  # Metin fontunu artırdık
+        labeldistance=1.2  # Etiketler biraz daha uzaklaşsın
     )
-    ax1.set_title("Toplam Ürün Çeşidi Satışı", fontsize=14, fontweight='bold')
+    
+    ax1.set_title("Toplam Ürün Çeşidi Satışı", fontsize=14, fontweight='bold', pad=20)
+
     fig1.tight_layout()
     buf1 = io.BytesIO()
     plt.savefig(buf1, format="png", dpi=200, bbox_inches='tight')
@@ -399,12 +421,13 @@ def generate_pie_charts(satilan_urunler, satilmayan_urunler, df):
         startangle=90,
         colors=colors,
         pctdistance=0.75,
-        labeldistance=1.1,
-        textprops={'fontsize': 8,  'ha': 'center'}  # Metin fontunu artırdık
+        labeldistance=1.4,
+        textprops={'fontsize': 12, 'fontweight': 'bold', 'ha': 'center'},  # Metin fontunu artırdık
+        wedgeprops={'width': 0.3}  # Dilimlerin kalınlığını ayarlayalım
     )
 
-    for i, text in enumerate(texts):
-        text.set_text(labels_with_percentage[i])  # Yüzdeyi de etiketlere ekliyoruz
+    # Etiketlerin yerleşmesini optimize et
+    texts = adjust_text(texts, only_move={'points': 'xy'}, force_points=(0.1, 0.1), lim=1000)
 
     ax2.set_title("KDV'li Net Satış Tutarına Göre Dağılım", fontsize=14, fontweight='bold')
 
@@ -432,6 +455,7 @@ def generate_pie_charts(satilan_urunler, satilmayan_urunler, df):
     plt.close(fig2)
 
     return chart_buffers
+
 
 
 

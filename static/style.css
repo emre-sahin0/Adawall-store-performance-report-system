@@ -23,6 +23,17 @@ body {
     display: none; /* PDF yazdırılırken bu buton gizlenir */
   }
 }
+/* Fotoğrafın boyutunu ve hizalanmasını ayarlayalım */
+.image-container {
+  text-align: center;
+  margin-top: 20px;
+}
+
+.image {
+  width: 100%;  /* Fotoğrafın genişliğini %100 yaparak tüm alana yayılmasını sağlarız */
+  max-width: 600px; /* Maksimum genişlik */
+  border-radius: 10px; /* Yuvarlak köşeler */
+}
 
 
 
@@ -34,7 +45,7 @@ body {
   }
 }
 .report-header {
-  background: linear-gradient(to right, #eaf89e, #beff45);
+  background: linear-gradient(to right, #ffecec, #fcb0b0);
   color: white;
   font-weight: bold;
   font-size: 1.8rem;
