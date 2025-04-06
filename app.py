@@ -144,10 +144,11 @@ def detect_and_extract_columns(file_path):
     # ⬇️ SÜTUNLARI TESPİT ET (eski kodunla aynı)
     malzeme_keywords = ["malzeme grubu", "ürün grubu", "malzeme adı"]
     kategori_keywords = ["kategori"]
+    kod_keywords = ["ürün kodu","ürün kodları","ürün açıklaması"]
     satis_keywords = ["net satış miktarı", "satış miktar", "toplam satış"]
     kdvli_keywords = ["kdv li net satış tutar", "kdv'li net satış tutarı", "kdv dahil satış tutarı"]
 
-    malzeme_sutun = kategori_sutun = satis_sutun = kdvli_sutun = data_start_row = None
+    malzeme_sutun = kategori_sutun = satis_sutun = kdvli_sutun = kod_sutun = data_start_row = None
 
     for i in range(50):
         row_values = df.iloc[i].astype(str).str.lower()
@@ -158,6 +159,9 @@ def detect_and_extract_columns(file_path):
         for keyword in kategori_keywords:
             if any(row_values.str.contains(keyword)):
                 kategori_sutun = row_values[row_values.str.contains(keyword)].index[0]
+        for keyword in kod_keywords:
+            if any(row_values.str.contains(keyword)):
+                kod_sutun = row_values[row_values.str.contains(keyword)].index[0]
         for keyword in satis_keywords:
             if any(row_values.str.contains(keyword)):
                 satis_sutun = row_values[row_values.str.contains(keyword)].index[0]
@@ -165,18 +169,19 @@ def detect_and_extract_columns(file_path):
             if any(row_values.str.contains(keyword)):
                 kdvli_sutun = row_values[row_values.str.contains(keyword)].index[0]
 
-        if all([malzeme_sutun, kategori_sutun, satis_sutun, kdvli_sutun]):
+        if all([malzeme_sutun, kategori_sutun, satis_sutun, kdvli_sutun, kod_sutun  ]):
             data_start_row = i
             break
 
-    if None in [malzeme_sutun, kategori_sutun, satis_sutun, kdvli_sutun, data_start_row]:
+    if None in [malzeme_sutun, kategori_sutun, satis_sutun, kdvli_sutun, kod_sutun, data_start_row]:
         raise ValueError("Gerekli sütunlar bulunamadı!")
 
     # Temizlenmiş veri çerçevesi
-    df_cleaned = df.iloc[data_start_row + 1:, [malzeme_sutun, kategori_sutun, satis_sutun, kdvli_sutun]]
-    df_cleaned.columns = ["Malzeme Grubu", "Kategori", "Net Satış Miktarı", "Kdv Li Net Satış Tutar"]
+    df_cleaned = df.iloc[data_start_row + 1:, [malzeme_sutun, kategori_sutun, satis_sutun, kdvli_sutun, kod_sutun]]
+    df_cleaned.columns = ["Malzeme Grubu", "Kategori", "Net Satış Miktarı", "Kdv Li Net Satış Tutar", "Ürün Kodu"]
     df_cleaned = df_cleaned[df_cleaned["Malzeme Grubu"] != "Toplam"].dropna()
 
+    # Sadece sayısal sütunları dönüştür, ürün kodunu hariç tut
     for col in ["Net Satış Miktarı", "Kdv Li Net Satış Tutar"]:
         df_cleaned[col] = (
             df_cleaned[col].astype(str)
@@ -185,19 +190,21 @@ def detect_and_extract_columns(file_path):
             .str.replace(",", ".", regex=False)
         )
         df_cleaned[col] = pd.to_numeric(df_cleaned[col], errors="coerce")
+    
+    # Ürün kodunu string olarak bırak, sadece gereksiz boşlukları temizle
+    df_cleaned["Ürün Kodu"] = df_cleaned["Ürün Kodu"].astype(str).str.strip()
 
     # Filtreleme için ayrı sütun
     df_cleaned["Filtre"] = df_cleaned["Malzeme Grubu"].apply(
         lambda x: (
-            "AdaHome" if "adahome" in x.lower() else
-            "AdaWall" if "adawall" in x.lower() else
-            "AdaPanel" if "adapanel" in x.lower() else
+            "AdaHome" if "adahome" in str(x).lower() else
+            "AdaWall" if "adawall" in str(x).lower() else
+            "AdaPanel" if "adapanel" in str(x).lower() else
             "Diğer"
         )
-        
     )
 
-    return df_cleaned, rapor_tipi,
+    return df_cleaned, rapor_tipi
 
 
 
@@ -333,7 +340,7 @@ def generate_combined_recommendations(df_cleaned):
         if not has_recommendation:
             block += """
             <div style="background-color: #f8f9fa; border-left: 4px solid #ccc; padding: 15px; border-radius: 8px; margin-bottom: 10px; color: #555; font-style: italic;">
-                ✅ Bu markaya ait önerilecek özel bir durum bulunmamaktadır.
+                ✅ Bu kategoriye ait önerilecek özel bir durum bulunmamaktadır. Başarılarınızın devamını dileriz....
             </div>
             """
 

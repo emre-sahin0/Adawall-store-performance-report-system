@@ -21,10 +21,12 @@ $(document).ready(() => {
     document.getElementById('categoryFilter')?.addEventListener('change', function () {
       const selectedCategory = this.value;
       const allRows = document.querySelectorAll('.table tbody tr');
+      
       allRows.forEach(row => {
-        const categoryCell = row.querySelector('td:nth-child(3)');
-        const rowCategory = categoryCell.textContent.trim();
-        if (selectedCategory === 'all' || rowCategory.includes(selectedCategory)) {
+        // data-filter özelliğini kullanarak filtreleme yap
+        const rowFilter = row.getAttribute('data-filter');
+        
+        if (selectedCategory === 'all' || rowFilter === selectedCategory) {
           row.style.display = '';
         } else {
           row.style.display = 'none';

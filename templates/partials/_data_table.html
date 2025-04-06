@@ -30,6 +30,7 @@
           <th>#</th>
           <th>Malzeme Grubu</th>
           <th>Kategori</th>
+          <th>Ürün Kodu</th>
           <th class="text-end">Net Satış Miktarı</th>
           <th class="text-end">Kdv Li Net Satış Tutar (TL)</th>
         </tr>
@@ -41,6 +42,7 @@
           <td>{{ loop.index }}</td>
           <td>{{ row['Malzeme Grubu'] }}</td>
           <td>{{ row['Kategori'] if 'Kategori' in row else '-' }}</td>
+          <td>{{ row['Ürün Kodu'] if 'Ürün Kodu' in row else '-' }}</td>
           <td class="text-end">{{ "{:,.2f}".format(row['Net Satış Miktarı']|float) }}</td>
           <td class="text-end">{{ "{:,.2f}".format(row['Kdv Li Net Satış Tutar']|float) }}</td>
         </tr>
@@ -53,6 +55,7 @@
           <td>{{ loop.index + 5 }}</td>
           <td>{{ row['Malzeme Grubu'] }}</td>
           <td>{{ row['Kategori'] if 'Kategori' in row else '-' }}</td>
+          <td>{{ row['Ürün Kodu'] if 'Ürün Kodu' in row else '-' }}</td>
           <td class="text-end">{{ "{:,.2f}".format(row['Net Satış Miktarı']|float) }}</td>
           <td class="text-end">{{ "{:,.2f}".format(row['Kdv Li Net Satış Tutar']|float) }}</td>
         </tr>
