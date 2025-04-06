@@ -310,11 +310,16 @@ def generate_combined_recommendations(df_cleaned):
                 ozel_df = brand_df[brand_df["Malzeme Grubu"].str.lower().str.contains("özel üretim")]
                 paket_satis = paket_df["Net Satış Miktarı"].sum()
                 ozel_satis = ozel_df["Net Satış Miktarı"].sum()
-                if paket_satis < thresholds.get("Paket", float("inf")) and ozel_satis < thresholds.get("Özel Üretim", float("inf")):
+                
+                # Eğer her iki satış türü de hedefi karşılamıyorsa öneri göster
+                paket_hedef = thresholds.get("Paket", 20)
+                ozel_hedef = thresholds.get("Özel Üretim", 500) 
+                
+                if paket_satis < paket_hedef or ozel_satis < ozel_hedef:
                     has_recommendation = True
                     block += f"""
                     <div class='normal-message mt-2'>
-                        🔹 <b>{rule['keyword']} satış</b>: Paket: <b>{paket_satis:.1f} Adet </b>, Özel: <b>{ozel_satis:.1f} Metre</b> (Hedef: 20 Paket ve 500 Metre Özel Üretim)<br>
+                        🔹 <b>{rule['keyword']} satış</b>: Paket: <b>{paket_satis:.1f} Adet </b>, Özel: <b>{ozel_satis:.1f} Metre</b> (Hedef: {paket_hedef} Paket ve {ozel_hedef} Metre Özel Üretim)<br>
                         ➔ {rule['message']}
                     </div>
                     """

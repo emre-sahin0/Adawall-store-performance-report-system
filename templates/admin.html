@@ -9,7 +9,7 @@
     body {
       background: linear-gradient(135deg, #6657ee, #07ffb1);
       min-height: 100vh;
-      padding: 40px;
+      padding: 20px;
     }
   
     .admin-wrapper {
@@ -18,7 +18,7 @@
       padding: 30px;
       border-radius: 20px;
       box-shadow: 0 0 25px rgba(0, 0, 0, 0.2);
-      max-width: 1300px;
+      max-width: 95%;
       margin: auto;
     }
   
@@ -46,7 +46,8 @@
       padding: 25px;
       border-radius: 15px;
       box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
-      height: 100%;
+      margin: 0 auto;
+      max-width: 100%;
     }
   
     .panel:first-child {
@@ -82,11 +83,11 @@
       <a href="/" class="btn btn-secondary">← Ana Sayfaya Dön</a>
     </div>
 
-    <div class="row g-4">
+    <div class="row justify-content-center">
       <!-- Satış Önerileri -->
-      <div class="col-md-6">
+      <div class="col-md-12">
         <div class="panel">
-          <h4>📋 Satış Önerileri</h4>
+          <h4 class="text-center">📋 Satış Önerileri</h4>
           <table class="table table-bordered">
             <thead>
               <tr>
@@ -115,54 +116,13 @@
           </table>
 
           <div class="form-section">
-            <h5 class="mt-4">➕ Yeni Ekle</h5>
+            <h5 class="mt-4 text-center">➕ Yeni Ekle</h5>
             <form action="/admin" method="post">
               <input type="hidden" name="action" value="add">
               <input type="text" name="keyword" class="form-control" placeholder="Anahtar Kelime" required>
               <input type="number" name="threshold" class="form-control" placeholder="Eşik Değeri" required>
               <input type="text" name="message" class="form-control" placeholder="Öneri Mesajı" required>
               <button type="submit" class="btn btn-success w-100 mt-2">✔ Ekle</button>
-            </form>
-          </div>
-        </div>
-      </div>
-
-      <!-- Satılamayan Ürün Önerileri -->
-      <div class="col-md-6">
-        <div class="panel">
-          <h4>🚫 Satılamayan Ürün Önerileri</h4>
-          <table class="table table-bordered">
-            <thead>
-              <tr>
-                <th>Anahtar</th>
-                <th>Mesaj</th>
-                <th>Sil</th>
-              </tr>
-            </thead>
-            <tbody>
-              {% for rule in missing_rules %}
-              <tr>
-                <td>{{ rule.keyword }}</td>
-                <td>{{ rule.message }}</td>
-                <td>
-                  <form action="/admin" method="post">
-                    <input type="hidden" name="action" value="delete_missing">
-                    <input type="hidden" name="missing_index" value="{{ loop.index0 }}">
-                    <button type="submit" class="btn btn-danger btn-sm">🗑</button>
-                  </form>
-                </td>
-              </tr>
-              {% endfor %}
-            </tbody>
-          </table>
-
-          <div class="form-section">
-            <h5 class="mt-4">➕ Yeni Ekle</h5>
-            <form action="/admin" method="post">
-              <input type="hidden" name="action" value="add_missing">
-              <input type="text" name="missing_keyword" class="form-control" placeholder="Anahtar Kelime" required>
-              <input type="text" name="missing_message" class="form-control" placeholder="Öneri Mesajı" required>
-              <button type="submit" class="btn btn-warning w-100 mt-2">✔ Ekle</button>
             </form>
           </div>
         </div>
