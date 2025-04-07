@@ -590,6 +590,22 @@ def upload_file():
     grouped_missing = None
     ciro = 0
 
+    # Uploads klasörünün mevcut durumunu logla
+    print("\n=== Uploads Klasörü Durumu ===")
+    if os.path.exists(UPLOAD_FOLDER):
+        files = os.listdir(UPLOAD_FOLDER)
+        if files:
+            print("Mevcut Dosyalar:")
+            for file in files:
+                file_path = os.path.join(UPLOAD_FOLDER, file)
+                file_size = os.path.getsize(file_path) / 1024  # KB cinsinden
+                print(f"- {file} ({file_size:.2f} KB)")
+        else:
+            print("Klasör boş")
+    else:
+        print("Uploads klasörü henüz oluşturulmamış")
+    print("=============================\n")
+
     if request.method == "POST" and 'file' in request.files:
         file = request.files['file']
         if file:
@@ -612,6 +628,19 @@ def upload_file():
             file_path = os.path.join(UPLOAD_FOLDER, uploaded_filename)
             file.save(file_path)
             print(f'Yeni dosya kaydedildi: {uploaded_filename}')
+
+            # Yükleme sonrası klasör durumunu logla
+            print("\n=== Yükleme Sonrası Uploads Klasörü Durumu ===")
+            files = os.listdir(UPLOAD_FOLDER)
+            if files:
+                print("Mevcut Dosyalar:")
+                for file in files:
+                    file_path = os.path.join(UPLOAD_FOLDER, file)
+                    file_size = os.path.getsize(file_path) / 1024  # KB cinsinden
+                    print(f"- {file} ({file_size:.2f} KB)")
+            else:
+                print("Klasör boş")
+            print("===========================================\n")
 
             try:
                 df_cleaned, rapor_tipi = detect_and_extract_columns(file_path)
