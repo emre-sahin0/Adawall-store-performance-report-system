@@ -17,7 +17,8 @@ import base64
 import os
 import pandas as pd
 import matplotlib.pyplot as plt
-from flask import Flask, request, render_template, redirect, url_for, session
+from flask import Flask, request, render_template, redirect, url_for, session, jsonify
+from werkzeug.utils import secure_filename
 
 # PyInstaller için gerekli resource_path fonksiyonu
 def resource_path(relative_path):
@@ -587,14 +588,31 @@ def upload_file():
     uploaded_filename = None
     combined_recommendations = None
     grouped_missing = None
-    ciro = 0  # ✅ GET istekleri için tanımlı olsun
+    ciro = 0
 
     if request.method == "POST" and 'file' in request.files:
         file = request.files['file']
         if file:
-            uploaded_filename = file.filename
-            file_path = os.path.join(UPLOAD_FOLDER, file.filename)
+            # Uploads klasörünü kontrol et ve oluştur
+            if not os.path.exists(UPLOAD_FOLDER):
+                os.makedirs(UPLOAD_FOLDER)
+            
+            # Önceki tüm dosyaları sil
+            for filename in os.listdir(UPLOAD_FOLDER):
+                file_path = os.path.join(UPLOAD_FOLDER, filename)
+                try:
+                    if os.path.isfile(file_path):
+                        os.unlink(file_path)
+                        print(f'Eski dosya silindi: {filename}')
+                except Exception as e:
+                    print(f'Dosya silinirken hata oluştu: {e}')
+
+            # Yeni dosyayı kaydet
+            uploaded_filename = secure_filename(file.filename)
+            file_path = os.path.join(UPLOAD_FOLDER, uploaded_filename)
             file.save(file_path)
+            print(f'Yeni dosya kaydedildi: {uploaded_filename}')
+
             try:
                 df_cleaned, rapor_tipi = detect_and_extract_columns(file_path)
                 session['data'] = df_cleaned.to_dict(orient="records")
@@ -629,9 +647,8 @@ def upload_file():
                            recommendations=recommendations_html,
                            pie_chart_url=pie_chart_url,
                            rapor_tipi=rapor_tipi,
-                           ciro=ciro,  # ✅ ciro template'e gönderiliyor
+                           ciro=ciro,
                            pie_chart_url2=pie_chart_url2,
-                           
                            uploaded_filename=uploaded_filename,
                            combined_recommendations=combined_recommendations,
                            grouped_missing_products=grouped_missing)
