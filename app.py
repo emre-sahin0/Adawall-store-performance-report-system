@@ -689,33 +689,6 @@ def admin_panel():
         print(f"Error loading rules: {str(e)}")
         rules = []
 
-    # Check if there's an uploaded file
-    uploaded_filename = None
-    combined_recommendations = None
-    table_data = None
-    
-    # Get the latest uploaded file
-    if os.path.exists(UPLOAD_FOLDER):
-        files = [f for f in os.listdir(UPLOAD_FOLDER) if f.endswith('.csv')]
-        if files:
-            latest_file = max(files, key=lambda x: os.path.getctime(os.path.join(UPLOAD_FOLDER, x)))
-            uploaded_filename = latest_file
-            file_path = os.path.join(UPLOAD_FOLDER, latest_file)
-            
-            try:
-                # Read and process the CSV file
-                df = pd.read_csv(file_path, encoding='utf-8', sep=';')
-                df_cleaned = df.copy()
-                
-                # Generate recommendations
-                combined_recommendations = generate_combined_recommendations(df_cleaned)
-                
-                # Prepare table data
-                table_data = df.to_dict('records')
-                
-            except Exception as e:
-                print(f"Error processing file: {str(e)}")
-
     if request.method == "POST":
         try:
             action = request.form.get("action")
@@ -764,11 +737,7 @@ def admin_panel():
             print(f"Error processing form: {str(e)}")
             return redirect("/admin")
 
-    return render_template("admin.html", 
-                         rules=rules,
-                         uploaded_filename=uploaded_filename,
-                         combined_recommendations=combined_recommendations,
-                         table_data=table_data)
+    return render_template("admin.html", rules=rules)
 
 from flask import Flask, request, render_template, session
 
