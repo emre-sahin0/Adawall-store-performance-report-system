@@ -82,6 +82,30 @@
         .table-hover tbody tr:hover {
             background-color: rgba(52, 152, 219, 0.1);
         }
+        
+        .logout-btn {
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            text-decoration: none;
+        }
+        
+        .logout-btn:hover {
+            background-color: #c82333;
+            color: white;
+        }
+        
+        .no-print {
+            display: none !important;
+        }
+        
+        @media print {
+            .no-print {
+                display: none !important;
+            }
+        }
     </style>
 </head>
 <body>
@@ -98,6 +122,9 @@
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="/admin">⚙️ Admin Paneli</a>
+                    </li>
+                    <li class="nav-item no-print">
+                        <a class="logout-btn" href="/logout">Çıkış Yap</a>
                     </li>
                 </ul>
             </div>

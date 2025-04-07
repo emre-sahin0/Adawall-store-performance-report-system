@@ -9,7 +9,7 @@ import sys
 import psutil
 import plotly.graph_objects as go
 from plotly.offline import plot
-from datetime import datetime
+from datetime import datetime, timedelta
 from docx import Document
 from docx.shared import Inches
 import requests
@@ -19,6 +19,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from flask import Flask, request, render_template, redirect, url_for, session, jsonify
 from werkzeug.utils import secure_filename
+from functools import wraps
 
 # PyInstaller için gerekli resource_path fonksiyonu
 def resource_path(relative_path):
@@ -33,12 +34,50 @@ def resource_path(relative_path):
 
 app = Flask(__name__)
 app.secret_key = "supersecretkey"
+app.permanent_session_lifetime = timedelta(minutes=30)  # Oturum 30 dakika sonra sonlanacak
 UPLOAD_FOLDER = resource_path('uploads')
 RULES_FILE = resource_path("rules.json")
 MISSING_RULES_FILE = resource_path("missing_rules.json")  # Satılmayan ürünler için öneri dosyası
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 KATALOG_DOSYA = resource_path("Kategoriler.csv")
+
+# Kullanıcı adı ve şifre
+ADMIN_USERNAME = os.environ.get('ADMIN_USERNAME', 'admin')
+ADMIN_PASSWORD = os.environ.get('ADMIN_PASSWORD', '123456')
+
+# UYARI: Gerçek bir uygulamada varsayılan şifre kullanmayın veya çok daha güçlü bir şifre seçin.
+#        Ortam değişkenlerini ayarlamak daha güvenli bir yöntemdir.
+
+def login_required(f):
+    @wraps(f) # Decorator'ın orijinal fonksiyon bilgilerini korumasını sağlar
+    def decorated_function(*args, **kwargs):
+        if 'logged_in' not in session:
+            return redirect(url_for('login', next=request.url))
+        return f(*args, **kwargs)
+    return decorated_function
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    error = None
+    if request.method == 'POST':
+        username = request.form.get('username')
+        password = request.form.get('password')
+        
+        if username == ADMIN_USERNAME and password == ADMIN_PASSWORD:
+            session.permanent = True  # Oturumun kalıcı olmasını sağla
+            session['logged_in'] = True
+            next_url = request.args.get('next')
+            return redirect(next_url or url_for('upload_file'))
+        else:
+            error = 'Geçersiz kullanıcı adı veya şifre!'
+            
+    return render_template('login.html', error=error)
+
+@app.route('/logout')
+def logout():
+    session.pop('logged_in', None)
+    return redirect(url_for('login'))
 
 #  Ürün kataloğunu oku veya boş set oluştur
 if os.path.exists(KATALOG_DOSYA):
@@ -569,6 +608,7 @@ from flask import render_template
 
 
 @app.route("/", methods=["GET", "POST"])
+@login_required
 def upload_file():
     recommendations_html = None
     missing_recommendations_html = None
@@ -682,6 +722,7 @@ def upload_file():
 
 
 @app.route("/admin", methods=["GET", "POST"])
+@login_required
 def admin_panel():
     try:
         rules = load_rules()
@@ -769,7 +810,7 @@ if __name__ == "__main__":
             icon.visible = True
 
         def open_browser(icon):
-            webbrowser.open(f"http://127.0.0.1:{port}")
+            webbrowser.open(f"http://127.0.0.1:{port}/login")
 
         def exit_action(icon):
             icon.stop()
@@ -777,7 +818,7 @@ if __name__ == "__main__":
             
         # Uygulamayı başlat
         port = find_free_port()
-        threading.Timer(1.0, lambda: webbrowser.open(f"http://127.0.0.1:{port}")).start()
+        threading.Timer(1.0, lambda: webbrowser.open(f"http://127.0.0.1:{port}/login")).start()
         
         # Sistem tepsisi için ikon ayarla
         try:
@@ -793,5 +834,5 @@ if __name__ == "__main__":
     except ImportError:
         # pystray bulunamazsa standart başlatma
         port = 5000
-        threading.Timer(1.0, lambda: webbrowser.open(f"http://127.0.0.1:{port}")).start()
+        threading.Timer(1.0, lambda: webbrowser.open(f"http://127.0.0.1:{port}/login")).start()
         app.run(debug=False, port=port, use_reloader=False)
