@@ -301,39 +301,18 @@ def generate_combined_recommendations(df_cleaned):
             keyword = rule["keyword"].lower()
             filtered = pd.DataFrame()
 
-            if keyword == "adawall 10.6 m2'lik rulo":
-                filtered = merged[(merged["Malzeme Grubu"].str.lower().str.contains("adawall duvar kağıdı")) & (merged["Kategori"].str.lower() == "10.0 mtr")]
-            elif keyword == "adawall 16.5 m2'lik rulo":
-                filtered = merged[(merged["Malzeme Grubu"].str.lower().str.contains("adawall duvar kağıdı")) & (merged["Kategori"].str.lower() == "15.6 mtr")]
-            elif keyword == "adawall tutkal":
-                filtered = merged[(merged["Malzeme Grubu"].str.lower().str.contains("adawall tutkal")) & (merged["Kategori"].str.lower().str.contains("200 gram"))]
-            elif keyword == "adahome döşemelik kumaş":
-                filtered = brand_df[brand_df["Malzeme Grubu"].str.lower().str.contains("adahome.*kumaş")]
-            elif keyword == "adawall poster":
-                filtered = brand_df[brand_df["Malzeme Grubu"].str.lower().str.contains("adawall") & brand_df["Malzeme Grubu"].str.lower().str.contains("poster|katalog")]
-            elif keyword == "adahome yastık":
-                filtered = merged[merged["Malzeme Grubu"].str.lower().str.contains("adahome.*yastık")]
-            elif keyword == "adapanel ürünleri":
-                thresholds = rule["threshold"] if isinstance(rule["threshold"], dict) else {}
-                paket_df = brand_df[brand_df["Malzeme Grubu"].str.lower().str.contains("paket")]
-                ozel_df = brand_df[brand_df["Malzeme Grubu"].str.lower().str.contains("özel üretim")]
-                paket_satis = paket_df["Net Satış Miktarı"].sum()
-                ozel_satis = ozel_df["Net Satış Miktarı"].sum()
-                
-                # Eğer her iki satış türü de hedefi karşılamıyorsa öneri göster
-                paket_hedef = thresholds.get("Paket", 20)
-                ozel_hedef = thresholds.get("Özel Üretim", 500) 
-                
-                if paket_satis < paket_hedef or ozel_satis < ozel_hedef:
-                    has_recommendation = True
-                    block += f"""
-                    <div class='normal-message mt-2'>
-                        🔹 <b>{rule['keyword']} satış</b>: Paket: <b>{paket_satis:.1f} Adet </b>, Özel: <b>{ozel_satis:.1f} Metre</b> (Hedef: {paket_hedef} Paket ve {ozel_hedef} Metre Özel Üretim)<br>
-                        ➔ {rule['message']}
-                    </div>
-                    """
-                continue
+            # Özel filtreleme kurallarını uygula
+            if rule.get("filters"):
+                filters = rule["filters"]
+                if filters.get("malzeme_grubu"):
+                    filtered = merged[merged["Malzeme Grubu"].str.lower().str.contains(filters["malzeme_grubu"], regex=True)]
+                else:
+                    filtered = brand_df[brand_df["Malzeme Grubu"].str.lower().str.contains(keyword)]
+
+                if filters.get("kategori"):
+                    filtered = filtered[filtered["Kategori"].str.lower() == filters["kategori"].lower()]
             else:
+                # Eğer özel filtre yoksa normal filtreleme yap
                 filtered = brand_df[brand_df["Malzeme Grubu"].str.lower().str.contains(keyword)]
 
             if not filtered.empty:
@@ -344,10 +323,24 @@ def generate_combined_recommendations(df_cleaned):
                 hedef_birim = " Rulo" if "duvar kağıdı" in keyword else (f" {birim}" if birim else "")
                 if product_sales < rule["threshold"]:
                     has_recommendation = True
+                    # Filtre bilgisini al
+                    filters_text = ""
+                    # if rule.get("filters"):
+                    #     mg_filter = rule["filters"].get("malzeme_grubu")
+                    #     kat_filter = rule["filters"].get("kategori")
+                    #     filter_parts = []
+                    #     if mg_filter:
+                    #         filter_parts.append(f"Malzeme Grubu: '{mg_filter}'")
+                    #     if kat_filter:
+                    #         filter_parts.append(f"Kategori: '{kat_filter}'")
+                    #     if filter_parts:
+                    #         filters_text = f"<small class='text-muted d-block'>(Filtreler: {', '.join(filter_parts)})</small>"
+                                
                     block += f"""
                     <div class='normal-message mt-2'>
                         🔹 <b>{rule['keyword']} Satışınız</b>: <b>{product_sales:.1f} {birim}</b> (Hedef: {rule['threshold']}{hedef_birim})<br>
                         ➔ {rule['message']}
+                        {filters_text}
                     </div>
                     """
 
@@ -690,40 +683,92 @@ def upload_file():
 
 @app.route("/admin", methods=["GET", "POST"])
 def admin_panel():
-    rules = load_rules()
-    missing_rules = load_missing_rules()
+    try:
+        rules = load_rules()
+    except Exception as e:
+        print(f"Error loading rules: {str(e)}")
+        rules = []
+
+    # Check if there's an uploaded file
+    uploaded_filename = None
+    combined_recommendations = None
+    table_data = None
+    
+    # Get the latest uploaded file
+    if os.path.exists(UPLOAD_FOLDER):
+        files = [f for f in os.listdir(UPLOAD_FOLDER) if f.endswith('.csv')]
+        if files:
+            latest_file = max(files, key=lambda x: os.path.getctime(os.path.join(UPLOAD_FOLDER, x)))
+            uploaded_filename = latest_file
+            file_path = os.path.join(UPLOAD_FOLDER, latest_file)
+            
+            try:
+                # Read and process the CSV file
+                df = pd.read_csv(file_path, encoding='utf-8', sep=';')
+                df_cleaned = df.copy()
+                
+                # Generate recommendations
+                combined_recommendations = generate_combined_recommendations(df_cleaned)
+                
+                # Prepare table data
+                table_data = df.to_dict('records')
+                
+            except Exception as e:
+                print(f"Error processing file: {str(e)}")
 
     if request.method == "POST":
-        action = request.form.get("action")
+        try:
+            action = request.form.get("action")
 
-        if action == "add":
-            keyword = request.form.get("keyword").strip()
-            threshold = int(request.form.get("threshold"))
-            message = request.form.get("message")
-            rules.append({"keyword": keyword, "threshold": threshold, "message": message})
-            save_rules(rules)
+            if action == "add":
+                keyword = request.form.get("keyword", "").strip()
+                threshold = request.form.get("threshold", "0").strip()
+                message = request.form.get("message", "").strip()
+                malzeme_grubu = request.form.get("malzeme_grubu", "").strip()
+                kategori = request.form.get("kategori", "").strip()
 
-        elif action == "delete":
-            index = int(request.form.get("index"))
-            if 0 <= index < len(rules):
-                del rules[index]
+                # Filtreleri oluştur
+                filters = None
+                if malzeme_grubu or kategori:
+                    filters = {
+                        "malzeme_grubu": malzeme_grubu if malzeme_grubu else None,
+                        "kategori": kategori if kategori else None
+                    }
+
+                # Threshold'u sayıya çevir
+                try:
+                    threshold = int(threshold)
+                except ValueError:
+                    threshold = 0
+
+                rules.append({
+                    "keyword": keyword,
+                    "threshold": threshold,
+                    "message": message,
+                    "filters": filters
+                })
                 save_rules(rules)
 
-        elif action == "add_missing":
-            keyword = request.form.get("missing_keyword").strip()
-            message = request.form.get("missing_message")
-            missing_rules.append({"keyword": keyword, "message": message})
-            save_missing_rules(missing_rules)
+            elif action == "delete":
+                try:
+                    index = int(request.form.get("index", "0"))
+                    if 0 <= index < len(rules):
+                        rules.pop(index)
+                        save_rules(rules)
+                except (ValueError, IndexError):
+                    pass
 
-        elif action == "delete_missing":
-            index = int(request.form.get("missing_index"))
-            if 0 <= index < len(missing_rules):
-                del missing_rules[index]
-                save_missing_rules(missing_rules)
+            return redirect("/admin")
 
-        return redirect(url_for("admin_panel"))
+        except Exception as e:
+            print(f"Error processing form: {str(e)}")
+            return redirect("/admin")
 
-    return render_template("admin.html", rules=rules, missing_rules=missing_rules)
+    return render_template("admin.html", 
+                         rules=rules,
+                         uploaded_filename=uploaded_filename,
+                         combined_recommendations=combined_recommendations,
+                         table_data=table_data)
 
 from flask import Flask, request, render_template, session
 
