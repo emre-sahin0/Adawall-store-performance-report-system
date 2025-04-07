@@ -19,14 +19,25 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from flask import Flask, request, render_template, redirect, url_for, session
 
+# PyInstaller için gerekli resource_path fonksiyonu
+def resource_path(relative_path):
+    """ PyInstaller için kaynak dosyaların yolunu düzenleyen yardımcı fonksiyon """
+    try:
+        # PyInstaller oluşturduğu _MEIPASS
+        base_path = sys._MEIPASS
+    except Exception:
+        base_path = os.path.abspath(".")
+
+    return os.path.join(base_path, relative_path)
+
 app = Flask(__name__)
 app.secret_key = "supersecretkey"
-UPLOAD_FOLDER = 'uploads'
-RULES_FILE = "rules.json"
-MISSING_RULES_FILE = "missing_rules.json"  # Satılmayan ürünler için öneri dosyası
+UPLOAD_FOLDER = resource_path('uploads')
+RULES_FILE = resource_path("rules.json")
+MISSING_RULES_FILE = resource_path("missing_rules.json")  # Satılmayan ürünler için öneri dosyası
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
-KATALOG_DOSYA = "Kategoriler.csv"
+KATALOG_DOSYA = resource_path("Kategoriler.csv")
 
 #  Ürün kataloğunu oku veya boş set oluştur
 if os.path.exists(KATALOG_DOSYA):
@@ -61,9 +72,6 @@ def save_missing_rules(missing_rules):
         json.dump(missing_rules, file, indent=4, ensure_ascii=False)
 
 import pandas as pd
-
-
-
 
 from datetime import datetime
 
@@ -678,5 +686,52 @@ import threading
 import webbrowser
 
 if __name__ == "__main__":
-    threading.Timer(1.0, lambda: webbrowser.open("http://127.0.0.1:5000")).start()
-    app.run(debug=True, use_reloader=False)
+    import threading
+    import webbrowser
+    import socket
+    import os
+    from contextlib import closing
+    
+    # Kullanılabilir port bulma fonksiyonu
+    def find_free_port():
+        with closing(socket.socket(socket.AF_INET, socket.SOCK_STREAM)) as s:
+            s.bind(('', 0))
+            s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+            return s.getsockname()[1]
+    
+    # Sistem tepsisine ikon ekleme (Windows için)
+    try:
+        import pystray
+        from PIL import Image
+        from pystray import MenuItem as item
+        
+        def setup(icon):
+            icon.visible = True
+
+        def open_browser(icon):
+            webbrowser.open(f"http://127.0.0.1:{port}")
+
+        def exit_action(icon):
+            icon.stop()
+            os._exit(0)
+            
+        # Uygulamayı başlat
+        port = find_free_port()
+        threading.Timer(1.0, lambda: webbrowser.open(f"http://127.0.0.1:{port}")).start()
+        
+        # Sistem tepsisi için ikon ayarla
+        try:
+            image = Image.open(resource_path("static/favicon.ico"))
+            menu = (item('Uygulamayı Aç', open_browser), item('Çıkış', exit_action))
+            icon = pystray.Icon("Analiz", image, "Analiz Uygulaması", menu)
+            threading.Thread(target=lambda: icon.run()).start()
+        except Exception as e:
+            print(f"Sistem tepsisi ikonu oluşturulamadı: {e}")
+            
+        # Flask uygulamasını başlat
+        app.run(debug=False, port=port, use_reloader=False)
+    except ImportError:
+        # pystray bulunamazsa standart başlatma
+        port = 5000
+        threading.Timer(1.0, lambda: webbrowser.open(f"http://127.0.0.1:{port}")).start()
+        app.run(debug=False, port=port, use_reloader=False)

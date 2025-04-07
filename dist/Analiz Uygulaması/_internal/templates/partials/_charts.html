@@ -1,0 +1,41 @@
+{% if pie_chart_url %}
+<!-- Satış Analizleri Başlığı Kutusu -->
+<div class="report-header mb-4 p-3 rounded text-center box-container">
+  <h2 class="sales-title">📊 Satış Analizleri</h2>
+</div>
+
+<div class="row justify-content-center">
+  <div class="col-12 col-sm-8 col-md-6">
+    <div class="border rounded p-2 bg-white shadow-sm text-center">
+      <img src="data:image/png;base64,{{ pie_chart_url2 }}" class="img-fluid" alt="Tutar Dağılımı">
+    </div>
+  </div>
+</div>
+</div>
+{% endif %}
+
+<style>
+  /* Başlık kutusunun stilini belirleyelim */
+  .box-container {
+    background-color: #1E90FF; /* Kutu rengi */
+    padding: 30px;
+    border-radius: 15px; /* Köşeleri yuvarlak yap */
+    max-width: 80%; /* Kutu genişliğini ayarla */
+    margin: 0 auto; /* Ortalamak için */
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); /* Gölge efekti */
+  }
+
+  /* Satış Analizleri başlığını büyüt ve sağdan sola yaz */
+  .sales-title {
+    font-size: 50px; /* Yazı boyutunu büyük yap */
+    color: white; /* Yazı rengini beyaz yap */
+    font-weight: bold; /* Kalın yazı */
+    letter-spacing: 2px; /* Harf aralığını biraz aç */
+    white-space: nowrap; /* Metnin satırlara bölünmesini engelle */
+    text-align: center; /* Ortalanmış metin */
+    animation: slideRight 5s ease-in-out infinite; /* Sağdan sola kayan animasyon */
+  }
+
+  /* Animasyon: Sağdan sola kaydırma */
+  
+</style>
