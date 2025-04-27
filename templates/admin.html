@@ -129,6 +129,62 @@
     </div>
     {% endif %}
 
+    <!-- Basit Öneriler -->
+    <div class="mt-4">
+        <div class="card admin-card">
+            <div class="card-header bg-primary text-white">
+                <h3 class="mb-0">📝 Basit Öneriler</h3>
+            </div>
+            <div class="card-body">
+                <!-- Yeni Öneri Ekleme Formu -->
+                <form method="POST" class="mb-4">
+                    <input type="hidden" name="action" value="add_simple">
+                    <div class="mb-3">
+                        <label for="simple_message" class="form-label">Yeni Öneri Ekle</label>
+                        <textarea class="form-control" id="simple_message" name="simple_message" rows="3" required
+                                  placeholder="Öneri mesajını buraya yazın..."></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-success">Öneri Ekle</button>
+                </form>
+
+                <!-- Mevcut Öneriler -->
+                {% if simple_recommendations %}
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Öneri</th>
+                                <th>İşlem</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for rec in simple_recommendations %}
+                            <tr>
+                                <td>{{ rec.message }}</td>
+                                <td>
+                                    <form method="POST" style="display: inline;">
+                                        <input type="hidden" name="action" value="delete_simple">
+                                        <input type="hidden" name="simple_index" value="{{ loop.index0 }}">
+                                        <button type="submit" class="btn btn-danger btn-sm" 
+                                                onclick="return confirm('Bu öneriyi silmek istediğinizden emin misiniz?')">
+                                            🗑 Sil
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="alert alert-info">
+                    Henüz öneri eklenmemiş.
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
     <!-- Veri Tablosu -->
     {% if table_data %}
     <div class="mt-4">

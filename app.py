@@ -32,9 +32,49 @@ def resource_path(relative_path):
 
     return os.path.join(base_path, relative_path)
 
+SIMPLE_RECOMMENDATIONS_FILE = resource_path("simple_recommendations.json")
+
+def load_simple_recommendations():
+    if not os.path.exists(SIMPLE_RECOMMENDATIONS_FILE):
+        with open(SIMPLE_RECOMMENDATIONS_FILE, "w", encoding="utf-8") as file:
+            json.dump([], file)
+    with open(SIMPLE_RECOMMENDATIONS_FILE, "r", encoding="utf-8") as file:
+        return json.load(file)
+
+def save_simple_recommendations(recommendations):
+    with open(SIMPLE_RECOMMENDATIONS_FILE, "w", encoding="utf-8") as file:
+        json.dump(recommendations, file, indent=4, ensure_ascii=False)
+
+def generate_simple_recommendations():
+    recommendations = load_simple_recommendations()
+    if not recommendations:
+        return "<div class='no-recommendation'>Henüz öneri eklenmemiş.</div>"
+    
+    html = """
+    <div class="simple-recommendations" style="background-color: #fff; border-radius: 15px; padding: 25px; margin-top: 30px; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
+        <div style="text-align: center; font-size: 24px; font-weight: bold; margin-bottom: 20px;">
+            📝 GENEL ÖNERİLER
+        </div>
+        <hr style="border: none; border-top: 3px dashed #ffc107; margin: 20px 0;">
+    """
+    
+    for rec in recommendations:
+        html += f"""
+        <div class='normal-message mt-2'>
+            📌 {rec['message']}
+        </div>
+        """
+    
+    html += "</div>"
+    return html
+
 app = Flask(__name__)
 app.secret_key = "supersecretkey"
 app.permanent_session_lifetime = timedelta(minutes=30)  # Oturum 30 dakika sonra sonlanacak
+
+# Template'de kullanılacak fonksiyonları ekle
+app.jinja_env.globals.update(generate_simple_recommendations=generate_simple_recommendations)
+
 UPLOAD_FOLDER = resource_path('uploads')
 RULES_FILE = resource_path("rules.json")
 MISSING_RULES_FILE = resource_path("missing_rules.json")  # Satılmayan ürünler için öneri dosyası
@@ -726,9 +766,11 @@ def upload_file():
 def admin_panel():
     try:
         rules = load_rules()
+        simple_recommendations = load_simple_recommendations()
     except Exception as e:
         print(f"Error loading rules: {str(e)}")
         rules = []
+        simple_recommendations = []
 
     if request.method == "POST":
         try:
@@ -772,13 +814,30 @@ def admin_panel():
                 except (ValueError, IndexError):
                     pass
 
+            elif action == "add_simple":
+                message = request.form.get("simple_message", "").strip()
+                if message:
+                    simple_recommendations.append({
+                        "message": message
+                    })
+                    save_simple_recommendations(simple_recommendations)
+
+            elif action == "delete_simple":
+                try:
+                    index = int(request.form.get("simple_index", "0"))
+                    if 0 <= index < len(simple_recommendations):
+                        simple_recommendations.pop(index)
+                        save_simple_recommendations(simple_recommendations)
+                except (ValueError, IndexError):
+                    pass
+
             return redirect("/admin")
 
         except Exception as e:
             print(f"Error processing form: {str(e)}")
             return redirect("/admin")
 
-    return render_template("admin.html", rules=rules)
+    return render_template("admin.html", rules=rules, simple_recommendations=simple_recommendations)
 
 from flask import Flask, request, render_template, session
 
@@ -836,3 +895,41 @@ if __name__ == "__main__":
         port = 5000
         threading.Timer(1.0, lambda: webbrowser.open(f"http://127.0.0.1:{port}/login")).start()
         app.run(debug=False, port=port, use_reloader=False)
+
+@app.route("/simple_recommendations", methods=["GET", "POST"])
+@login_required
+def simple_recommendations_panel():
+    try:
+        recommendations = load_simple_recommendations()
+    except Exception as e:
+        print(f"Error loading recommendations: {str(e)}")
+        recommendations = []
+
+    if request.method == "POST":
+        try:
+            action = request.form.get("action")
+
+            if action == "add":
+                message = request.form.get("message", "").strip()
+                if message:
+                    recommendations.append({
+                        "message": message
+                    })
+                    save_simple_recommendations(recommendations)
+
+            elif action == "delete":
+                try:
+                    index = int(request.form.get("index", "0"))
+                    if 0 <= index < len(recommendations):
+                        recommendations.pop(index)
+                        save_simple_recommendations(recommendations)
+                except (ValueError, IndexError):
+                    pass
+
+            return redirect("/simple_recommendations")
+
+        except Exception as e:
+            print(f"Error processing form: {str(e)}")
+            return redirect("/simple_recommendations")
+
+    return render_template("simple_recommendations.html", recommendations=recommendations)

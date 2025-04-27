@@ -86,6 +86,11 @@
   </div>
   {% endif %}
 
+  <!-- ✅ BASİT ÖNERİLER -->
+  {% if table_data %}
+  {{ generate_simple_recommendations()|safe }}
+  {% endif %}
+
   <!-- ✅ SATILMAYAN ÜRÜNLER (opsiyonel) -->
   {# 
   {% if grouped_missing_products %}
