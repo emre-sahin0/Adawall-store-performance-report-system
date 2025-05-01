@@ -187,10 +187,8 @@ def detect_and_extract_columns(file_path):
         days = (end_date - start_date).days
         if 25 <= days <= 34:
             rapor_tipi = "Aylık"
-            # İngilizce ay ismini Türkçe'ye çevirme
-            ay_ismi_en = start_date.strftime("%B")  # Örneğin "March"
+            ay_ismi_en = start_date.strftime("%B")
             
-            # Ayları Türkçe'ye çevir
             ay_cevirisi = {
                 "January": "Ocak",
                 "February": "Şubat",
@@ -206,13 +204,10 @@ def detect_and_extract_columns(file_path):
                 "December": "Aralık"
             }
             
-            # Ay ismini Türkçe'ye çeviriyoruz
             ay_ismi = ay_cevirisi.get(ay_ismi_en, ay_ismi_en)
-            
             rapor_tipi = f"{ay_ismi} Ayı İçin Aylık Satış Analizi"
         elif 76 <= days <= 110:
             rapor_tipi = "3 Aylık Satış Analizi"
-
         elif 160 <= days <= 220:
             rapor_tipi = "6 Aylık Satış Analizi"
         elif 340 <= days <= 385:
@@ -222,14 +217,7 @@ def detect_and_extract_columns(file_path):
     else:
         rapor_tipi = "Genel"
 
-    # HTML şablonunda kullanılacak rapor tipi ve dosya ismi
-    print(f"✅ Başlangıç: {start_date} | Bitiş: {end_date} ➜ Rapor Tipi: {rapor_tipi}")
-    # 🧩 Son olarak buraya senin tüm veri ayıklama işlemlerin gelmeli:
-    # df_cleaned = ...
-    # return df_cleaned,_
-
-
-    # ⬇️ SÜTUNLARI TESPİT ET (eski kodunla aynı)
+    # ⬇️ SÜTUNLARI TESPİT ET
     malzeme_keywords = ["malzeme grubu", "ürün grubu", "malzeme adı"]
     kategori_keywords = ["kategori"]
     kod_keywords = ["ürün kodu","ürün kodları","ürün açıklaması"]
@@ -257,7 +245,7 @@ def detect_and_extract_columns(file_path):
             if any(row_values.str.contains(keyword)):
                 kdvli_sutun = row_values[row_values.str.contains(keyword)].index[0]
 
-        if all([malzeme_sutun, kategori_sutun, satis_sutun, kdvli_sutun, kod_sutun  ]):
+        if all([malzeme_sutun, kategori_sutun, satis_sutun, kdvli_sutun, kod_sutun]):
             data_start_row = i
             break
 
@@ -466,22 +454,22 @@ def generate_pie_charts(satilan_urunler, satilmayan_urunler, df):
     from adjustText import adjust_text
 
     df.columns = df.columns.str.strip()
-    categories = ["AdaHome", "AdaPanel", "AdaWall"]
+    categories = ["AdaHome", "AdaPanel", "Adawall"]
     colors = ['#ffcc00', '#66b3ff', '#99ff99']
     chart_buffers = []
 
     # --- GRAFİK 1: Satılan vs Satılmayan ürün adedi ---
-    fig1, ax1 = plt.subplots(figsize=(3, 3))  # Grafik boyutunu büyütüyoruz
+    fig1, ax1 = plt.subplots(figsize=(3, 3))
     wedges, texts, autotexts = ax1.pie(
         [len(satilan_urunler), len(satilmayan_urunler)],
         labels=["Satılan", "Satılmayan"],
         autopct='%1.1f%%',
         colors=["#4CAF50", "#FF6347"],
-        explode=(0.1, 0),  # Dilimlerden birini daha belirgin yapıyoruz
+        explode=(0.1, 0),
         shadow=True,
         startangle=90,
-        textprops={'fontsize': 8, 'fontweight': 'bold', 'ha': 'center'},  # Metin fontunu artırdık
-        labeldistance=1.2  # Etiketler biraz daha uzaklaşsın
+        textprops={'fontsize': 8, 'fontweight': 'bold', 'ha': 'center'},
+        labeldistance=1.2
     )
     
     ax1.set_title("Toplam Ürün Çeşidi Satışı", fontsize=14, fontweight='bold', pad=20)
@@ -493,8 +481,8 @@ def generate_pie_charts(satilan_urunler, satilmayan_urunler, df):
     chart_buffers.append(base64.b64encode(buf1.read()).decode("utf8"))
     plt.close(fig1)
 
-    # --- GRAFİK 2: KDV'li satış tutarı yüzdesi + altta renkli TL açıklama ---
-    fig2, ax2 = plt.subplots(figsize=(4, 4), dpi=250)  # Grafik boyutunu büyütüyoruz
+    # --- GRAFİK 2: KDV'li satış tutarı yüzdesi ---
+    fig2, ax2 = plt.subplots(figsize=(4, 4), dpi=250)
     df_satilan = df[df["Malzeme Grubu"].isin(satilan_urunler)]
 
     try:
@@ -504,48 +492,56 @@ def generate_pie_charts(satilan_urunler, satilmayan_urunler, df):
         tutar_column = "Kdv Li Net Satış Tutar"
         df[tutar_column] = df[tutar_column].astype(float)
 
+    # Regex desenlerini değiştirdik
     sales_by_category = {
-        cat: df_satilan[df_satilan["Malzeme Grubu"].str.contains(fr'\b{cat}\b', na=False, case=False)][tutar_column].sum()
+        cat: df_satilan[df_satilan["Malzeme Grubu"].str.contains(cat.lower(), case=False)][tutar_column].sum()
         for cat in categories
     }
 
     values = list(sales_by_category.values())
     labels = list(sales_by_category.keys())
 
-# Yüzde hesaplama
-    total_sales = sum(values)
-    percentages = [round((value / total_sales) * 100, 1) for value in values]
+    # Eğer hiç satış yoksa veya tüm değerler sıfırsa
+    if sum(values) == 0:
+        wedges, texts = ax2.pie(
+            [1],
+            labels=["Satış Yok"],
+            colors=["#e0e0e0"],
+            startangle=90,
+            textprops={'fontsize': 12, 'fontweight': 'bold'}
+        )
+        ax2.set_title("KDV'li Net Satış Tutarına Göre Dağılım\n(Henüz Satış Yok)", fontsize=14, fontweight='bold')
+    else:
+        total_sales = sum(values)
+        percentages = [round((value / total_sales) * 100, 1) for value in values]
 
-# Pie chart (dilim üzerinde yüzde gösterme kapalı)
-    wedges, texts = ax2.pie(
-        values,
-        labels=None,  # Etiket yok
-        startangle=90,
-        colors=colors,
-        pctdistance=0.75,
-        labeldistance=1.4,
-        textprops={'fontsize': 8, 'fontweight': 'bold', 'ha': 'center'},
-        wedgeprops={'width': 0.3}
-    )
+        wedges, texts = ax2.pie(
+            values,
+            labels=None,
+            startangle=90,
+            colors=colors,
+            pctdistance=0.75,
+            labeldistance=1.4,
+            textprops={'fontsize': 8, 'fontweight': 'bold', 'ha': 'center'},
+            wedgeprops={'width': 0.3}
+        )
 
-# Başlık
-    ax2.set_title("KDV'li Net Satış Tutarına Göre Dağılım", fontsize=14, fontweight='bold')
+        ax2.set_title("KDV'li Net Satış Tutarına Göre Dağılım", fontsize=14, fontweight='bold')
 
-# Altta renkli kutular ve yüzdeler
-    legend_labels = [
-        f"{cat}: ₺{sales_by_category[cat]:,.0f} ({percentages[i]}%)" for i, cat in enumerate(categories)
-    ]
-    legend_patches = [
-        mpatches.Patch(color=colors[i], label=legend_labels[i]) for i in range(len(categories))
-    ]
+        legend_labels = [
+            f"{cat}: ₺{sales_by_category[cat]:,.0f} ({percentages[i]}%)" for i, cat in enumerate(categories)
+        ]
+        legend_patches = [
+            mpatches.Patch(color=colors[i], label=legend_labels[i]) for i in range(len(categories))
+        ]
 
-    ax2.legend(
-     handles=legend_patches,
-        loc='lower center',
-        bbox_to_anchor=(0.5, -0.25),
-        fontsize=10,
-        frameon=False
-    )
+        ax2.legend(
+            handles=legend_patches,
+            loc='lower center',
+            bbox_to_anchor=(0.5, -0.25),
+            fontsize=10,
+            frameon=False
+        )
 
     fig2.tight_layout()
     buf2 = io.BytesIO()
@@ -701,6 +697,25 @@ def upload_file():
             file_path = os.path.join(UPLOAD_FOLDER, uploaded_filename)
             file.save(file_path)
             print(f'Yeni dosya kaydedildi: {uploaded_filename}')
+
+            # Excel dosyası ise CSV'ye dönüştür
+            if uploaded_filename.lower().endswith(('.xlsx', '.xls')):
+                try:
+                    # Excel dosyasını oku
+                    df = pd.read_excel(file_path)
+                    # CSV dosya adını oluştur
+                    csv_filename = os.path.splitext(uploaded_filename)[0] + '.csv'
+                    csv_path = os.path.join(UPLOAD_FOLDER, csv_filename)
+                    # CSV olarak kaydet
+                    df.to_csv(csv_path, sep=';', index=False, encoding='utf-8')
+                    # Orijinal Excel dosyasını sil
+                    os.remove(file_path)
+                    # CSV dosyasını kullan
+                    file_path = csv_path
+                    uploaded_filename = csv_filename
+                    print(f'Excel dosyası CSV\'ye dönüştürüldü: {csv_filename}')
+                except Exception as e:
+                    return f"Excel dosyası dönüştürülürken hata oluştu:<br><pre>{str(e)}</pre>"
 
             # Yükleme sonrası klasör durumunu logla
             print("\n=== Yükleme Sonrası Uploads Klasörü Durumu ===")
