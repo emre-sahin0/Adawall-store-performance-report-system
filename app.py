@@ -159,7 +159,7 @@ from datetime import datetime
 import pandas as pd
 
 def detect_and_extract_columns(file_path):
-    df = pd.read_csv(file_path, encoding="utf-8", sep=";", header=None, low_memory=False)
+    df = pd.read_csv(file_path, encoding="utf-8", sep=";", header=None, low_memory=False, decimal=",", thousands=".")
 
     start_date = None
     end_date = None
@@ -218,6 +218,18 @@ def detect_and_extract_columns(file_path):
         rapor_tipi = "Genel"
 
     # ⬇️ SÜTUNLARI TESPİT ET
+    # Önce başlık satırını bul
+    header_row = None
+    for i in range(50):
+        row_text = " ".join(df.iloc[i].dropna().astype(str)).lower()
+        if "malzeme grubu" in row_text and "kategori" in row_text:
+            header_row = i
+            break
+
+    if header_row is None:
+        raise ValueError("Başlık satırı bulunamadı!")
+
+    # ⬇️ SÜTUNLARI TESPİT ET
     malzeme_keywords = ["malzeme grubu", "ürün grubu", "malzeme adı"]
     kategori_keywords = ["kategori"]
     kod_keywords = ["ürün kodu","ürün kodları","ürün açıklaması"]
@@ -259,12 +271,6 @@ def detect_and_extract_columns(file_path):
 
     # Sadece sayısal sütunları dönüştür, ürün kodunu hariç tut
     for col in ["Net Satış Miktarı", "Kdv Li Net Satış Tutar"]:
-        df_cleaned[col] = (
-            df_cleaned[col].astype(str)
-            .str.replace(r"[^\d,-]", "", regex=True)
-            .str.replace(".", "", regex=False)
-            .str.replace(",", ".", regex=False)
-        )
         df_cleaned[col] = pd.to_numeric(df_cleaned[col], errors="coerce")
     
     # Ürün kodunu string olarak bırak, sadece gereksiz boşlukları temizle
@@ -279,6 +285,10 @@ def detect_and_extract_columns(file_path):
             "Diğer"
         )
     )
+
+    print(df_cleaned.head(10))
+    print(df_cleaned[["Kdv Li Net Satış Tutar"]].head(10))
+    print(df_cleaned["Kdv Li Net Satış Tutar"].dtype)
 
     return df_cleaned, rapor_tipi
 
