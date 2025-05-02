@@ -395,30 +395,30 @@ def generate_combined_recommendations(df_cleaned):
                 if filters.get("kategori"):
                     filtered = filtered[filtered["Kategori"].str.lower() == filters["kategori"].lower()]
             else:
-                # Eğer özel filtre yoksa normal filtreleme yap
                 filtered = brand_df[brand_df["Malzeme Grubu"].str.lower().str.contains(keyword)]
 
+            # threshold dict ise (ör: Adapanel) aynı mantık devam
+            if isinstance(rule["threshold"], dict):
+                paket_sum = brand_df[brand_df["Malzeme Grubu"].str.lower().str.contains("paket")]["Net Satış Miktarı"].sum()
+                ozel_sum = brand_df[brand_df["Malzeme Grubu"].str.lower().str.contains("özel")]["Net Satış Miktarı"].sum()
+                paket_th = rule["threshold"].get("Paket", 0)
+                ozel_th = rule["threshold"].get("Özel Üretim", 0)
+                if (paket_sum < paket_th) and (ozel_sum < ozel_th):
+                    has_recommendation = True
+                    block += f"""
+                    <div class='normal-message mt-2'>
+                        🔹 <b>{rule['keyword']} Satışınız</b>: <b>Paket: {paket_sum:.1f}, Özel Üretim: {ozel_sum:.1f}</b> (Hedefler: Paket {paket_th}, Özel Üretim {ozel_th})<br>
+                        ➔ {rule['message']}
+                    </div>
+                    """
+                continue
             if not filtered.empty:
                 product_sales = filtered["Net Satış Miktarı"].sum()
-                if isinstance(rule["threshold"], dict):
-                    continue
                 birim = get_unit_from_keyword(keyword)
                 hedef_birim = " Rulo" if "duvar kağıdı" in keyword else (f" {birim}" if birim else "")
                 if product_sales < rule["threshold"]:
                     has_recommendation = True
-                    # Filtre bilgisini al
                     filters_text = ""
-                    # if rule.get("filters"):
-                    #     mg_filter = rule["filters"].get("malzeme_grubu")
-                    #     kat_filter = rule["filters"].get("kategori")
-                    #     filter_parts = []
-                    #     if mg_filter:
-                    #         filter_parts.append(f"Malzeme Grubu: '{mg_filter}'")
-                    #     if kat_filter:
-                    #         filter_parts.append(f"Kategori: '{kat_filter}'")
-                    #     if filter_parts:
-                    #         filters_text = f"<small class='text-muted d-block'>(Filtreler: {', '.join(filter_parts)})</small>"
-                                
                     block += f"""
                     <div class='normal-message mt-2'>
                         🔹 <b>{rule['keyword']} Satışınız</b>: <b>{product_sales:.1f} {birim}</b> (Hedef: {rule['threshold']}{hedef_birim})<br>

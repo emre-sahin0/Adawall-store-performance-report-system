@@ -66,12 +66,6 @@
         }
     },
     {
-        "keyword": "AdaHome Yastık",
-        "threshold": 20,
-        "message": "Aylık 20 yastık satış hedefinizin altında kaldığınızı görüyoruz. Toplamda 140 farklı yastık modelimiz olduğunu biliyor musunuz? Mağazanızda eksik olan modeller var mı, kontrol etmenizi rica ederiz. Özellikle Teddy ve Aristokrat Hayvan serilerine ait ürünleri, aynı tabanda ve farklı çeşitlerini yan yana sergileyerek müşterilere daha etkileyici bir sunum yapıyor musunuz? Sizce mağazada daha fazla yastık sergileyebileceğimiz bir alana ihtiyaç var mı? Müşteriler düz tonlarda yastık talep ettiğinde, elimizde bulunan 7 farklı düz kumaştan (KTLKRDB 53, KTLKRIK 38, KTLK 42, KTLDK 1, KTLDK 2, KTLDK 3, KTLDK 4) yastık üretilebildiğini ve bu kumaşları kartela (şelale) üzerinden gösterebildiğinizi belirtiyor musunuz? Ayrıca yastıkları perde, döşemelik kumaş, puf, Amerikan servis, pleksi tepsi, önlük, masa örtüsü ve runner ürünleriyle kombinleyerek şık ve uyumlu setler oluşturabileceğinizi müşterilerinize iletiyor musunuz? Son olarak, sadece yastık kılıfı (içsiz) satın alarak, bir kutuda 1 yastık yerine 20 adet yastık kılıfı sevkiyatı yapılabileceğini ve böylece nakliye maliyetinizi önemli ölçüde azaltabileceğinizi biliyor musunuz?",
-        "filters": null
-    },
-    {
         "keyword": "Adapanel",
         "threshold": {
             "Paket": 20,
@@ -98,12 +92,13 @@
             "kategori": "15.6 mtr"
         }
     },
+    
     {
-        "keyword": "AdaHome Runner Ürünleri 100mt",
-        "threshold": 400,
-        "message": "neden az sattın",
+        "keyword": "AdaHome Yastık",
+        "threshold": 20,
+        "message": "Aylık 20 yastık satış hedefinizin altında kaldığınızı görüyoruz. Toplamda 140 farklı yastık modelimiz olduğunu biliyor musunuz? Mağazanızda eksik olan modeller var mı, kontrol etmenizi rica ederiz. Özellikle Teddy ve Aristokrat Hayvan serilerine ait ürünleri, aynı tabanda ve farklı çeşitlerini yan yana sergileyerek müşterilere daha etkileyici bir sunum yapıyor musunuz? Sizce mağazada daha fazla yastık sergileyebileceğimiz bir alana ihtiyaç var mı? Müşteriler düz tonlarda yastık talep ettiğinde, elimizde bulunan 7 farklı düz kumaştan (KTLKRDB 53, KTLKRIK 38, KTLK 42, KTLDK 1, KTLDK 2, KTLDK 3, KTLDK 4) yastık üretilebildiğini ve bu kumaşları kartela (şelale) üzerinden gösterebildiğinizi belirtiyor musunuz? Ayrıca yastıkları perde, döşemelik kumaş, puf, Amerikan servis, pleksi tepsi, önlük, masa örtüsü ve runner ürünleriyle kombinleyerek şık ve uyumlu setler oluşturabileceğinizi müşterilerinize iletiyor musunuz? Son olarak, sadece yastık kılıfı (içsiz) satın alarak, bir kutuda 1 yastık yerine 20 adet yastık kılıfı sevkiyatı yapılabileceğini ve böylece nakliye maliyetinizi önemli ölçüde azaltabileceğinizi biliyor musunuz?",
         "filters": {
-            "malzeme_grubu": "adahome runner",
+            "malzeme_grubu": "adahome dolgulu|adahome yastık",
             "kategori": null
         }
     }
