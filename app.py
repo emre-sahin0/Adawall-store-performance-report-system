@@ -20,6 +20,12 @@ import matplotlib.pyplot as plt
 from flask import Flask, request, render_template, redirect, url_for, session, jsonify
 from werkzeug.utils import secure_filename
 from functools import wraps
+import re
+
+def secure_filename_tr(filename):
+    # Sadece izin verilen karakterleri bırak (harf, rakam, Türkçe karakterler, boşluk, alt çizgi, nokta, tire)
+    filename = re.sub(r"[^A-Za-z0-9ğüşöçıİĞÜŞÖÇ ._-]", "", filename)
+    return filename
 
 # PyInstaller için gerekli resource_path fonksiyonu
 def resource_path(relative_path):
@@ -703,7 +709,7 @@ def upload_file():
                     print(f'Dosya silinirken hata oluştu: {e}')
 
             # Yeni dosyayı kaydet
-            uploaded_filename = secure_filename(file.filename)
+            uploaded_filename = secure_filename_tr(file.filename)
             file_path = os.path.join(UPLOAD_FOLDER, uploaded_filename)
             file.save(file_path)
             print(f'Yeni dosya kaydedildi: {uploaded_filename}')
