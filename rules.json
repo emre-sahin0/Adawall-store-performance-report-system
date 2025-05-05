@@ -92,7 +92,6 @@
             "kategori": "15.6 mtr"
         }
     },
-    
     {
         "keyword": "AdaHome Yastık",
         "threshold": 20,
@@ -101,5 +100,19 @@
             "malzeme_grubu": "adahome dolgulu|adahome yastık",
             "kategori": null
         }
+    },
+    {
+        "keyword": "AdaWall Katalog Poster",
+        "threshold": 50,
+        "message": "Aylık 50 metrekare olan satış hedefinizin altında kaldığınızı görüyoruz. Bu nedenle Amazon, Fiji, Seasons ve AdaKids Poster koleksiyonlarına ait katalogların mağazanızda mevcut olup olmadığını kontrol etmenizi rica ederiz. Potansiyel müşterileriniz, poster koleksiyonlarımızda aradıkları tarzda bir görsel bulamadıklarında, 350 milyona yakın telifsiz görsele sahip olan www.stock.adobe.com adresinden seçtikleri herhangi bir görselin poster olarak üretilebildiği bilgisini onlarla paylaşıyor musunuz? Poster ürünlerimiz tamamen kişiye özel üretildiği için \"Size özel tasarım\" vurgusunun özellikle yapılması büyük önem taşımaktadır. Ayrıca, mağazanıza gelen ve satış gerçekleşmeyen ya da tereddüt yaşayan müşterileriniz için, alışveriş yapmayıp mağazadan çıkmadan önce mutlaka Google Play ve Apple Store'da bulunan Adawall Duvarında Gör uygulamamızdan bahsetmenizi rica ederiz. Bu uygulama sayesinde müşteriler, poster ürünlerimizi kendi yaşam alanlarında dijital olarak görebilir ve karar sürecinde daha net bir fikir edinebilirler.",
+        "filters": {
+            "malzeme_grubu": "adawall katalog poster",
+            "kategori": null
+        }
+    },
+    {
+        "message": "Mağaza ziyaretlerinin artırılması adına Mimar, Müteahhit ve nitelikli müşterilerin mağazaya davet edilmesi, sosyal medyanın etkin kullanımı, yeni açılan showroomların lokasyon, hizmet ve koleksiyon bilgilerini içeren bilgilendirici broşürlerle tanıtılması ve yaşam alanının tüm ihtiyaçlarını yansıtan Mood Board sunumlarının müşterilere aktarılması, satış ve marka bilinirliği açısından önemli katkılar sağlayacaktır.",
+        "is_simple": true,
+        "keyword": "Genel Öneri"
     }
 ]

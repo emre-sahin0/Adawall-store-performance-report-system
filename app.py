@@ -41,15 +41,20 @@ def resource_path(relative_path):
 SIMPLE_RECOMMENDATIONS_FILE = resource_path("simple_recommendations.json")
 
 def load_simple_recommendations():
-    if not os.path.exists(SIMPLE_RECOMMENDATIONS_FILE):
-        with open(SIMPLE_RECOMMENDATIONS_FILE, "w", encoding="utf-8") as file:
-            json.dump([], file)
-    with open(SIMPLE_RECOMMENDATIONS_FILE, "r", encoding="utf-8") as file:
-        return json.load(file)
+    rules = load_rules()
+    return [rule for rule in rules if "is_simple" in rule and rule["is_simple"]]
 
 def save_simple_recommendations(recommendations):
-    with open(SIMPLE_RECOMMENDATIONS_FILE, "w", encoding="utf-8") as file:
-        json.dump(recommendations, file, indent=4, ensure_ascii=False)
+    rules = load_rules()
+    # Önce mevcut basit önerileri kaldır
+    rules = [rule for rule in rules if not ("is_simple" in rule and rule["is_simple"])]
+    # Yeni basit önerileri ekle
+    for rec in recommendations:
+        rec["is_simple"] = True
+        if "keyword" not in rec:
+            rec["keyword"] = "Genel Öneri"
+        rules.append(rec)
+    save_rules(rules)
 
 def generate_simple_recommendations():
     recommendations = load_simple_recommendations()
