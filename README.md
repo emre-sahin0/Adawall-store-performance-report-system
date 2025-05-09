@@ -1,42 +1,90 @@
-Satış Analiz ve Öneri Sistemi 🚀
-Bu proje, mağazaların aylık ve yıllık satış verilerini analiz eden, eksik veya düşük performans gösteren ürünler için önerilerde bulunan bir yapay zeka destekli satış analiz sistemidir.
-Sistem, yönetici paneli aracılığıyla özel öneri kuralları eklemeye ve güncellemeye olanak tanır.
+# 📊 Satış Analiz ve Raporlama Uygulaması
 
-🛠️ Proje Özellikleri
-✅ CSV Dosya Yükleme: Aylık ve yıllık satış verileri yüklenerek analiz edilir.
-✅ Satış Analizi: Hangi ürünlerin ne kadar satıldığı görselleştirilir.
-✅ Eksik Ürün Analizi: Hiç satılmayan veya az satılan ürünler belirlenir.
-✅ Öneri Sistemi: Eksik veya düşük satış performanslı ürünler için öneriler sunar.
-✅ Pie Chart Görselleştirme: Satışların grafiksel gösterimi ile kolay analiz imkanı.
-✅ Yönetici Paneli: Öneri kurallarını düzenleme ve yeni öneriler ekleme yeteneği.
-✅ Gizlenebilir Veri Listeleri: Satış ve eksik ürün listeleri varsayılan olarak kısaltılmış gösterilir, “Daha Fazla Göster” butonu ile açılabilir.
+Bu proje, şirketlerin satış verilerini analiz eden, görselleştiren ve öneriler sunan kapsamlı bir web uygulamasıdır. Python Flask framework'ü kullanılarak geliştirilmiştir.
 
-📂 Proje Kurulumu
-1️⃣ Gereksinimler
-Bu projeyi çalıştırmak için aşağıdaki araçların kurulu olması gerekir:
-🔹 Python 3.x
-🔹 Flask (Web uygulaması için)
-🔹 Matplotlib, Pandas (Veri analizi ve grafik oluşturma için)
-🔹 Bootstrap (HTML & CSS üzerinden çağrılıyor)
+## 🌟 Özellikler
 
-Eğer eksik olan kütüphaneler varsa, aşağıdaki komut ile yükleyebilirsiniz:
+- **Veri Analizi ve Görselleştirme**
+  - Satış verilerinin otomatik analizi
+  - İnteraktif pasta grafikleri
+  - Marka bazlı satış dağılımları
+  - KDV'li net satış tutarları analizi
 
-bash
-Kopyala
-Düzenle
-pip install flask pandas matplotlib
-2️⃣ Projeyi Çalıştırma
-Öncelikle, terminal veya komut satırında proje dizinine gidin:
+- **Akıllı Öneri Sistemi**
+  - Marka bazlı özelleştirilebilir öneriler
+  - Satış hedeflerine göre otomatik uyarılar
+  - Genel öneriler yönetimi
+  - Eksik ürün tespiti ve raporlama
 
+- **Güvenlik ve Kullanıcı Yönetimi**
+  - Güvenli giriş sistemi
+  - Oturum yönetimi
+  - Dosya güvenliği kontrolleri
+
+- **Veri İşleme**
+  - Excel ve CSV dosya desteği
+  - Otomatik veri temizleme ve düzenleme
+  - Türkçe karakter desteği
+  - Büyük veri setleri için optimize edilmiş performans
+
+## 🛠️ Teknolojiler
+
+- **Backend**
+  - Python 3.x
+  - Flask Framework
+  - Pandas (Veri analizi)
+  - Matplotlib (Grafik oluşturma)
+  - Plotly (İnteraktif grafikler)
+
+- **Frontend**
+  - HTML5
+  - CSS3
+  - JavaScript
+  - Bootstrap
+
+- **Veritabanı**
+  - JSON dosya tabanlı veri depolama
+  - CSV dosya işleme
+
+## 📋 Kurulum
+
+1. Gerekli Python paketlerini yükleyin:
+```bash
+pip install -r requirements.txt
+```
+
+2. Uygulamayı başlatın:
+```bash
 python app.py
-Başarıyla çalıştırıldığında, aşağıdaki gibi bir çıktı göreceksiniz:
- * Running on http://127.0.0.1:5000
-Tarayıcınızda http://127.0.0.1:5000 adresini açarak projeyi kullanabilirsiniz. 🎯
+```
 
-![Ekran görüntüsü 2025-03-27 170733](https://github.com/user-attachments/assets/95f53cf1-c1b2-4063-95ca-ff0c8f844aa2)
-![Ekran görüntüsü 2025-03-27 170752](https://github.com/user-attachments/assets/cfa527a9-e50a-4564-a28f-6bc2c36ed480)
-![Ekran görüntüsü 2025-03-27 170800](https://github.com/user-attachments/assets/1196cce9-bf51-482d-9ac9-950a2754600a)
-![Ekran görüntüsü 2025-03-27 170808](https://github.com/user-attachments/assets/ad622ebe-62a4-4eba-9169-3acb7290a19b)
+3. Tarayıcınızda `http://localhost:5000` adresine gidin
+
+## 🔐 Güvenlik
+
+- Güvenli dosya yükleme sistemi
+- Oturum bazlı kimlik doğrulama
+- Güvenli şifre yönetimi
+- Dosya tipi kontrolü
+
+## 📈 Kullanım
+
+1. Sisteme giriş yapın
+2. Satış verilerinizi Excel veya CSV formatında yükleyin
+3. Otomatik oluşturulan raporları inceleyin
+4. Marka bazlı önerileri görüntüleyin
+5. İnteraktif grafiklerle verilerinizi analiz edin
+
+## 🤝 Katkıda Bulunma
+
+1. Bu depoyu fork edin
+2. Yeni bir branch oluşturun (`git checkout -b feature/amazing-feature`)
+3. Değişikliklerinizi commit edin (`git commit -m 'Add some amazing feature'`)
+4. Branch'inizi push edin (`git push origin feature/amazing-feature`)
+5. Pull Request oluşturun
+
+## 📝 Lisans
+
+Bu proje MIT lisansı altında lisanslanmıştır. Detaylar için [LICENSE](LICENSE) dosyasına bakın.
 
 
-![Ekran görüntüsü 2025-03-23 033155](https://github.com/user-attachments/assets/7d2e0faa-2fd1-499d-81ff-e0e487b6a94a)
