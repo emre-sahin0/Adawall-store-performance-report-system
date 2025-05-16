@@ -60,7 +60,7 @@ def generate_simple_recommendations():
     recommendations = load_simple_recommendations()
     if not recommendations:
         return "<div class='no-recommendation'>Henüz öneri eklenmemiş.</div>"
-    
+
     html = """
     <div class="simple-recommendations" style="background-color: #fff; border-radius: 15px; padding: 25px; margin-top: 30px; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
         <div style="text-align: center; font-size: 24px; font-weight: bold; margin-bottom: 20px;">
@@ -68,16 +68,18 @@ def generate_simple_recommendations():
         </div>
         <hr style="border: none; border-top: 3px dashed #ffc107; margin: 20px 0;">
     """
-    
+
     for rec in recommendations:
         html += f"""
-        <div class='normal-message mt-2'>
+        <div class='normal-message mt-4' style="font-size: 16px;">
             📌 {rec['message']}
         </div>
+        <hr style="border: none; border-top: 1px solid #ddd; margin: 15px 0;">
         """
-    
+
     html += "</div>"
     return html
+
 
 app = Flask(__name__)
 app.secret_key = "supersecretkey"
