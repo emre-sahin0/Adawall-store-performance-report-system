@@ -129,7 +129,7 @@ def login():
 
 @app.route('/logout')
 def logout():
-    session.pop('logged_in', None)
+    session.clear()
     return redirect(url_for('login'))
 
 #  Ürün kataloğunu oku veya boş set oluştur
@@ -610,12 +610,11 @@ from flask import send_file
 
 
 import os
-import signal
 
 @app.route("/kapat")
 def kapat():
-    os.kill(os.getpid(), signal.SIGTERM)
-    return "Uygulama kapatılıyor..."
+    session.clear()
+    return redirect(url_for("login"))
 
 
 @app.route("/filtered_sold_chart", methods=["POST"])
